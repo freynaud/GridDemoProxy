@@ -50,43 +50,40 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			return complete(typed);
 		}
 
-		String submit = request.getParameter("submit");
-		if (submit != null) {
-			JSONObject o = new JSONObject();
-			o.put("success", true);
-			o.put("info", "NI");
+		String proposedPath = request.getParameter("submit");
+		if (proposedPath != null) {
+			JSONObject o = seekBrowser(proposedPath);
 			return o;
 		}
 
 		String current = request.getParameter("current");
 		if (current != null) {
-			JSONObject o = process(current);
+			JSONObject o = seemsValid(current);
 			return o;
 		}
 
 		return null;
 	}
 
-	private JSONObject process(String path) throws JSONException {
-
+	private JSONObject seekBrowser(String proposedPath) throws JSONException {
 		JSONObject o = new JSONObject();
 		o.put("success", true);
 		o.put("info", "");
 
-		File f = new File(path);
+		File f = new File(proposedPath);
 		if (!f.exists()) {
 			o.put("success", false);
-			o.put("info", f + " is not a valid file");
+			o.put("info", f + " is not a valid file.");
 			return o;
 		} else if (!f.isFile()) {
 			o.put("success", false);
 			o.put("info", f + " is a folder.You need to specify a file.");
 			return o;
 		} else {
-			int added = processPath(path);
+			int added = processPath(proposedPath);
 			if (added == 0) {
 				o.put("success", false);
-				o.put("info", "no new browser install found from " + path);
+				o.put("info", "no new browser install found from " + proposedPath);
 				return o;
 			} else {
 				o.put("info", "Woot." + added + " new browsers found");
@@ -104,7 +101,22 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				return o;
 			}
 		}
+	}
 
+	private JSONObject seemsValid(String path) throws JSONException {
+		JSONObject o = new JSONObject();
+		o.put("success", false);
+		o.put("content", path+" is not a valid browser executable");
+		
+		File f = new File(path);
+		if (f.exists() && f.isFile() ){
+			o.put("success", true);
+			DesiredCapabilities cap = BrowserFinderUtils.discoverFirefoxCapability(new File(path));
+			o.put("content", path+" appear to be a valid firefox "+cap.getVersion()+" install.");
+			
+		}
+		return o;
+		
 	}
 
 	private JSONObject complete(String typed) throws JSONException {
@@ -112,6 +124,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		JSONObject o = new JSONObject();
 		o.put("success", true);
 		o.put("info", "");
+		o.put("content", typed);
 
 		String sep = System.getProperty("file.separator");
 		String[] pieces = typed.split(sep);
@@ -134,15 +147,23 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			o.put("info", folder + " should be a folder. It isn't.");
 			return o;
 		}
-		final String last = pieces[pieces.length - 1];
-
+		String lastTmp =pieces[pieces.length - 1];
+		File ft = new File(folder,lastTmp);
+		if (ft.isDirectory()){
+			folder =ft;
+			lastTmp ="";
+		}
+		final String last = lastTmp; 
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
+				if (new File(dir,name).isHidden()){
+					return false;
+				}
 				return name.startsWith(last);
 			}
 		};
-
 		String[] children = folder.list(filter);
+
 		if (children.length == 0) {
 			o.put("success", false);
 			o.put("info", "nothing in " + folder + " starting with " + last);
@@ -151,16 +172,32 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 		StringBuilder builder = new StringBuilder();
 		if (children.length == 1) {
-			builder.append(new File(folder, children[0]).getAbsolutePath());
+			File f = new File(folder, children[0]);
+			builder.append(f.getAbsolutePath());
+			if (f.isDirectory()) {
+				builder.append(sep);
+				o.put("isDirectory", true);	
+			}
 		} else {
 			List<String> names = Arrays.asList(children);
 			String common = findCommonStart(names, last);
-			builder.append(new File(folder, common).getAbsolutePath());
-			StringBuilder t = new StringBuilder();
-			for (String child : children) {
-				t.append(child.replaceAll(folder.getAbsolutePath(), "") + " , ");
+			File f = new File(folder, common);
+
+			builder.append(f.getAbsolutePath());
+
+			if (f.isDirectory()) {
+				builder.append(sep);
 			}
+
+			StringBuilder t = new StringBuilder();
+			t.append("<ul>");
+			for (String child : children) {
+				t.append("<li>"+child.replaceAll(folder.getAbsolutePath(), "") + "</li>");
+			}
+			t.append("</ul>");
+			o.put("success", false);
 			o.put("info", "several choices :" + t.toString());
+			o.put("content", typed);
 		}
 		o.put("content", builder.toString());
 		return o;
@@ -200,7 +237,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		}
 		builder.append("</div>");
 
-		builder.append("<input id='firefox' size='50'>");
+		builder.append("<input id='firefox' size='50'  >");
 		builder.append("<div id='info' >");
 		builder.append("</ul>");
 
