@@ -1,0 +1,382 @@
+-------------------------------------------------------------------------------
+Test set: TestSuite
+-------------------------------------------------------------------------------
+Tests run: 14, Failures: 14, Errors: 0, Skipped: 0, Time elapsed: 0.846 sec <<< FAILURE!
+test(MyTest)  Time elapsed: 0.384 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.388 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.39 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.392 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.394 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.396 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.398 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.4 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.402 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+test(MyTest)  Time elapsed: 0.404 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.test(MyTest.java:19)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 18 more
+
+testUnknownUser(MyTest)  Time elapsed: 0.003 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.testUnknownUser(MyTest.java:28)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 35 more
+
+testWillTimeOut(MyTest)  Time elapsed: 0.004 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.testWillTimeOut(MyTest.java:39)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 35 more
+
+testWillTimeOutff4(MyTest)  Time elapsed: 0.006 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.testWillTimeOutff4(MyTest.java:49)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 35 more
+
+testWillTimeOutff4(MyTest)  Time elapsed: 0.002 sec  <<< FAILURE!
+org.openqa.selenium.WebDriverException: java.net.NoRouteToHostException: Network is unreachable
+System info: os.name: 'Linux', os.arch: 'i386', os.version: '2.6.35-28-generic-pae', java.version: '1.6.0_20'
+Driver info: driver.version: RemoteWebDriver
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:399)
+	at org.openqa.selenium.remote.RemoteWebDriver.startSession(RemoteWebDriver.java:101)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:84)
+	at org.openqa.selenium.remote.RemoteWebDriver.<init>(RemoteWebDriver.java:92)
+	at MyTest.testWillTimeOutff4(MyTest.java:49)
+Caused by: java.net.NoRouteToHostException: Network is unreachable
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.openqa.selenium.remote.ReusingSocketSocketFactory.connectSocket(ReusingSocketSocketFactory.java:122)
+	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:133)
+	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:149)
+	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:108)
+	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:415)
+	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
+	at org.openqa.selenium.remote.HttpCommandExecutor.fallBackExecute(HttpCommandExecutor.java:272)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:252)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:382)
+	... 35 more
+
