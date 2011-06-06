@@ -34,12 +34,12 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 	private FileSystemAjaxService service = new FileSystemAjaxService();
 	private BrowserFinderUtils browserUtils = new BrowserFinderUtils();
 	private WebDriverValidationService wdValidator = new WebDriverValidationService();
-	public final static String PAGE_TITLE ="WebDriver node config";
+	public final static String PAGE_TITLE = "WebDriver node config";
 
 	private static final Logger log = Logger.getLogger(WebDriverNodeConfigServlet.class.getName());
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if (node.getPort() == -1){
+		if (node.getPort() == -1) {
 			int port = request.getServerPort();
 			node.setPort(port);
 		}
@@ -65,6 +65,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			JSONObject o = new JSONObject();
 			o.put("success", true);
 			o.put("info", "");
+			o.put("capabilities", getCapabilitiesDiv());
 			return o;
 		}
 		String typed = request.getParameter("completion");
@@ -87,16 +88,20 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		if (index != null) {
 			int i = Integer.parseInt(index);
 			DesiredCapabilities c = node.getCapabilities().get(i);
-			DesiredCapabilities realCap = wdValidator.validate(node.getPort(),c);
 			JSONObject o = new JSONObject();
-			o.put("success", true);
 			try {
-				BrowserFinderUtils.updateGuessedCapability(c,realCap);
+				DesiredCapabilities realCap = wdValidator.validate(node.getPort(), c);
+				o.put("success", true);
+				BrowserFinderUtils.updateGuessedCapability(c, realCap);
 				o.put("info", "Success !");
-			}catch (GridException e) {
+				c.setCapability("valid", true);
+			} catch (GridException e) {
 				o.put("success", false);
+				c.setCapability("valid", false);
 				o.put("info", e.getMessage());
+				
 			}
+			o.put("capabilities", getCapabilitiesDiv());
 			return o;
 		}
 
@@ -126,7 +131,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		builder.append("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js'></script>");
 		builder.append("<script src='resources/NodeConfig.js'></script>");
 		builder.append("<link rel='stylesheet' type='text/css' href='resources/NodeConfig.css' />");
-		builder.append("<title>"+PAGE_TITLE+"</title>");
+		builder.append("<title>" + PAGE_TITLE + "</title>");
 		builder.append("</head>");
 
 		builder.append("<body>");
@@ -143,18 +148,19 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 		builder.append("More :</br>");
 		builder.append("<input id='browserLocation' size='50' >");
+		builder.append("<div id='completionHelp' ></div>");
 		builder.append("<div id='info' >provide the path to another browser executable to add its capability to the node.</div>");
-		builder.append("</ul>");
 
 		builder.append("<a id='reset' href='#' >reset</a>");
+		builder.append("<div id='validationMsg' >validation log</div>");
 		builder.append("</body>");
 		builder.append("</html>");
 
 		return builder.toString();
 
 	}
-	
-	private String getCapabilitiesDiv(){
+
+	private String getCapabilitiesDiv() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<div id='capabilities'>");
 		builder.append("Discovered capabilities :");
@@ -174,7 +180,16 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			if ("firefox".equals(browser)) {
 				builder.append(" , path:" + capability.getCapability(FirefoxDriver.BINARY));
 			}
-			builder.append("<a class='validate_cap' index='"+index+"' href='#' >validate</a>");
+
+			Object validated = capability.getCapability("valid");
+
+			if (validated == null) {
+				builder.append("<a class='validate_cap' index='" + index + "' href='#' >validate</a>");
+			} else if ((Boolean) validated) {
+				builder.append("<div>checked - passed</div>");
+			} else {
+				builder.append("<div>checked - failed</div>");
+			}
 
 			builder.append("</div>");
 			builder.append("</li>");
@@ -217,9 +232,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				}
 				o.put("info", c);
 
-				
 				// TODO freynaud remove formatitng from here.
-				o.put("content", getCapabilitiesDiv());
+				o.put("capabilities", getCapabilitiesDiv());
 				return o;
 			}
 		}

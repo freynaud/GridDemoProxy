@@ -141,13 +141,13 @@ public class BrowserFinderUtils {
 	}
 
 	public static void updateGuessedCapability(DesiredCapabilities c, DesiredCapabilities realCap) {
-		if (!c.getBrowserName().equals(realCap)){
+		if (!c.getBrowserName().equals(realCap.getBrowserName())){
+			c.setCapability("valid", false);
 			throw new GridException("Error validation the browser. Expected "+c.getBrowserName()+" but got "+realCap.getBrowserName());
 		}
-		if (c.getVersion()==null){
+		if (c.getVersion()==null || "".equals(c.getVersion())){
 			c.setVersion(realCap.getVersion());
 		}
-		
 	}
 
 }
