@@ -29,7 +29,7 @@ public class LogEverythingProxyRenderer implements HtmlRenderer {
 
 		for (TestSlot slot : proxy.getTestSlots()) {
 			DesiredCapabilities c = new DesiredCapabilities(slot.getCapabilities());
-			builder.append("<img src='" + BrowserNameUtils.getConsoleIconPath(c.getBrowserName()) + "' title='" + c + "' /> ");
+			builder.append("<img src='" + BrowserNameUtils.getConsoleIconPath(c) + "' title='" + c + "' /> ");
 		}
 
 		builder.append("</br>Some log for this node :")

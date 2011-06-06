@@ -2,10 +2,9 @@ package org.openqa.demo.node;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -16,18 +15,34 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.openqa.demo.nodes.service.BrowserFinderUtils;
+import org.openqa.demo.nodes.service.FileSystemAjaxService;
+import org.openqa.demo.nodes.service.WebDriverValidationService;
+import org.openqa.grid.common.RegistrationRequest;
+import org.openqa.grid.internal.exception.GridException;
+import org.openqa.grid.internal.listeners.RegistrationListener;
+import org.openqa.grid.web.utils.BrowserNameUtils;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.io.ByteStreams;
 
 public class WebDriverNodeConfigServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 7490344466454529896L;
 	private Node node = new Node();
+	private FileSystemAjaxService service = new FileSystemAjaxService();
+	private BrowserFinderUtils browserUtils = new BrowserFinderUtils();
+	private WebDriverValidationService wdValidator = new WebDriverValidationService();
+	public final static String PAGE_TITLE ="WebDriver node config";
 
 	private static final Logger log = Logger.getLogger(WebDriverNodeConfigServlet.class.getName());
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		if (node.getPort() == -1){
+			int port = request.getServerPort();
+			node.setPort(port);
+		}
 		String page = getPage();
 		write(page, response);
 	}
@@ -40,167 +55,52 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
-
 	}
 
 	private JSONObject processAjax(HttpServletRequest request, HttpServletResponse response) throws JSONException {
 
+		String reset = request.getParameter("reset");
+		if (reset != null) {
+			node.reset();
+			JSONObject o = new JSONObject();
+			o.put("success", true);
+			o.put("info", "");
+			return o;
+		}
 		String typed = request.getParameter("completion");
 		if (typed != null) {
-			return complete(typed);
+			return service.complete(typed);
 		}
 
 		String proposedPath = request.getParameter("submit");
 		if (proposedPath != null) {
-			JSONObject o = seekBrowser(proposedPath);
+			JSONObject o = seekBrowsers(proposedPath);
 			return o;
 		}
 
 		String current = request.getParameter("current");
 		if (current != null) {
-			JSONObject o = seemsValid(current);
+			JSONObject o = service.seemsValid(current);
+			return o;
+		}
+		String index = request.getParameter("validate");
+		if (index != null) {
+			int i = Integer.parseInt(index);
+			DesiredCapabilities c = node.getCapabilities().get(i);
+			DesiredCapabilities realCap = wdValidator.validate(node.getPort(),c);
+			JSONObject o = new JSONObject();
+			o.put("success", true);
+			try {
+				BrowserFinderUtils.updateGuessedCapability(c,realCap);
+				o.put("info", "Success !");
+			}catch (GridException e) {
+				o.put("success", false);
+				o.put("info", e.getMessage());
+			}
 			return o;
 		}
 
 		return null;
-	}
-
-	private JSONObject seekBrowser(String proposedPath) throws JSONException {
-		JSONObject o = new JSONObject();
-		o.put("success", true);
-		o.put("info", "");
-
-		File f = new File(proposedPath);
-		if (!f.exists()) {
-			o.put("success", false);
-			o.put("info", f + " is not a valid file.");
-			return o;
-		} else if (!f.isFile()) {
-			o.put("success", false);
-			o.put("info", f + " is a folder.You need to specify a file.");
-			return o;
-		} else {
-			int added = processPath(proposedPath);
-			if (added == 0) {
-				o.put("success", false);
-				o.put("info", "no new browser install found from " + proposedPath);
-				return o;
-			} else {
-				o.put("info", "Woot." + added + " new browsers found");
-				// return the new list.
-
-				StringBuilder msg = new StringBuilder();
-				msg.append("<ul>");
-				for (DesiredCapabilities capability : node.getCapabilities()) {
-					msg.append("<li>");
-					msg.append(capability);
-					msg.append("</li>");
-				}
-				// TODO freynaud remove formatitng from here.
-				o.put("content", msg.toString());
-				return o;
-			}
-		}
-	}
-
-	private JSONObject seemsValid(String path) throws JSONException {
-		JSONObject o = new JSONObject();
-		o.put("success", false);
-		o.put("content", path+" is not a valid browser executable");
-		
-		File f = new File(path);
-		if (f.exists() && f.isFile() ){
-			o.put("success", true);
-			DesiredCapabilities cap = BrowserFinderUtils.discoverFirefoxCapability(new File(path));
-			o.put("content", path+" appear to be a valid firefox "+cap.getVersion()+" install.");
-			
-		}
-		return o;
-		
-	}
-
-	private JSONObject complete(String typed) throws JSONException {
-
-		JSONObject o = new JSONObject();
-		o.put("success", true);
-		o.put("info", "");
-		o.put("content", typed);
-
-		String sep = System.getProperty("file.separator");
-		String[] pieces = typed.split(sep);
-		if (pieces.length == 0) {
-			o.put("success", false);
-			o.put("info", typed + " doesn't look like a valid path.");
-			return o;
-		}
-
-		StringBuilder b = new StringBuilder();
-		b.append(sep);
-
-		for (int i = 0; i < (pieces.length - 1); i++) {
-			b.append(pieces[i]).append(sep);
-		}
-
-		File folder = new File(b.toString());
-		if (!folder.exists()) {
-			o.put("success", false);
-			o.put("info", folder + " should be a folder. It isn't.");
-			return o;
-		}
-		String lastTmp =pieces[pieces.length - 1];
-		File ft = new File(folder,lastTmp);
-		if (ft.isDirectory()){
-			folder =ft;
-			lastTmp ="";
-		}
-		final String last = lastTmp; 
-		FilenameFilter filter = new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				if (new File(dir,name).isHidden()){
-					return false;
-				}
-				return name.startsWith(last);
-			}
-		};
-		String[] children = folder.list(filter);
-
-		if (children.length == 0) {
-			o.put("success", false);
-			o.put("info", "nothing in " + folder + " starting with " + last);
-			return o;
-		}
-
-		StringBuilder builder = new StringBuilder();
-		if (children.length == 1) {
-			File f = new File(folder, children[0]);
-			builder.append(f.getAbsolutePath());
-			if (f.isDirectory()) {
-				builder.append(sep);
-				o.put("isDirectory", true);	
-			}
-		} else {
-			List<String> names = Arrays.asList(children);
-			String common = findCommonStart(names, last);
-			File f = new File(folder, common);
-
-			builder.append(f.getAbsolutePath());
-
-			if (f.isDirectory()) {
-				builder.append(sep);
-			}
-
-			StringBuilder t = new StringBuilder();
-			t.append("<ul>");
-			for (String child : children) {
-				t.append("<li>"+child.replaceAll(folder.getAbsolutePath(), "") + "</li>");
-			}
-			t.append("</ul>");
-			o.put("success", false);
-			o.put("info", "several choices :" + t.toString());
-			o.put("content", typed);
-		}
-		o.put("content", builder.toString());
-		return o;
 	}
 
 	private void write(String content, HttpServletResponse response) throws IOException {
@@ -222,75 +122,107 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		builder.append("<html>");
 
 		builder.append("<head>");
+
 		builder.append("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js'></script>");
 		builder.append("<script src='resources/NodeConfig.js'></script>");
-		builder.append("<title>WebDriver node config</title>");
+		builder.append("<link rel='stylesheet' type='text/css' href='resources/NodeConfig.css' />");
+		builder.append("<title>"+PAGE_TITLE+"</title>");
 		builder.append("</head>");
 
 		builder.append("<body>");
-		builder.append("<div id='ffs'>");
-		builder.append("<ul>");
-		for (DesiredCapabilities capability : node.getCapabilities()) {
-			builder.append("<li>");
-			builder.append(capability);
-			builder.append("</li>");
+
+		builder.append("<div class='error' >");
+		for (String browser : node.getErrorPerBrowser().keySet()) {
+			builder.append(browser + " : " + node.getErrorPerBrowser().get(browser) + "</br>");
 		}
 		builder.append("</div>");
 
-		builder.append("<input id='firefox' size='50'  >");
-		builder.append("<div id='info' >");
+		builder.append(getCapabilitiesDiv());
+
+		builder.append("</div>");
+
+		builder.append("More :</br>");
+		builder.append("<input id='browserLocation' size='50' >");
+		builder.append("<div id='info' >provide the path to another browser executable to add its capability to the node.</div>");
 		builder.append("</ul>");
 
+		builder.append("<a id='reset' href='#' >reset</a>");
 		builder.append("</body>");
 		builder.append("</html>");
 
 		return builder.toString();
 
 	}
-
-	private int processPath(String path) {
-		int origin = node.getCapabilities().size();
-		// try to add the new ones
-		File more = new File(path);
-		String exeName = more.getName();
-		File folder = new File(more.getParent());
-		File parent = new File(folder.getParent());
-
-		List<File> folders = BrowserFinderUtils.guessInstallsInFolder(parent);
-		for (File f : folders) {
-			File exe = new File(f, exeName);
-			DesiredCapabilities c = BrowserFinderUtils.discoverFirefoxCapability(exe);
-			if (c != null) {
-				node.addNewBrowserInstall(c);
+	
+	private String getCapabilitiesDiv(){
+		StringBuilder builder = new StringBuilder();
+		builder.append("<div id='capabilities'>");
+		builder.append("Discovered capabilities :");
+		builder.append("<ul>");
+		int i = 0;
+		for (DesiredCapabilities capability : node.getCapabilities()) {
+			int index = node.getCapabilities().indexOf(capability);
+			builder.append("<li>");
+			builder.append("<div id='capability_" + index + "'>");
+			// browser
+			String browser = capability.getBrowserName();
+			builder.append("<img src='/extra/resources/images/" + BrowserNameUtils.consoleIconName(capability) + ".png'  title='" + browser + "'>");
+			builder.append("<b> " + browser + "</b>");
+			// version
+			builder.append(", v:" + ("".equals(capability.getVersion()) ? "??" : capability.getVersion()));
+			// binary
+			if ("firefox".equals(browser)) {
+				builder.append(" , path:" + capability.getCapability(FirefoxDriver.BINARY));
 			}
+			builder.append("<a class='validate_cap' index='"+index+"' href='#' >validate</a>");
+
+			builder.append("</div>");
+			builder.append("</li>");
+			i++;
 		}
-		int delta = node.getCapabilities().size() - origin;
-		return delta;
+		return builder.toString();
 	}
 
-	private String findCommonStart(List<String> names, String last) {
-		int i = last.length();
-		String lastok = last;
+	public JSONObject seekBrowsers(String proposedPath) throws JSONException {
+		JSONObject o = new JSONObject();
+		o.put("success", true);
+		o.put("info", "");
 
-		String first = names.get(0);
-
-		while (i < first.length()) {
-			String commonPrefix = first.substring(0, i);
-			for (String s : names) {
-				if (s.length() < i) {
-					return lastok;
-				}
-				String prefix = s.substring(0, i);
-				if (!commonPrefix.equals(prefix)) {
-					return lastok;
+		File f = new File(proposedPath);
+		if (!f.exists()) {
+			o.put("success", false);
+			o.put("info", f + " is not a valid file.");
+			return o;
+		} else if (!f.isFile()) {
+			o.put("success", false);
+			o.put("info", f + " is a folder.You need to specify a file.");
+			return o;
+		} else {
+			List<String> addeds = new ArrayList<String>();
+			List<DesiredCapabilities> founds = browserUtils.findAllInstallsAround(proposedPath);
+			for (DesiredCapabilities c : founds) {
+				if (node.addNewBrowserInstall(c)) {
+					addeds.add(c.getBrowserName() + " v" + c.getVersion());
 				}
 			}
-			lastok = commonPrefix;
-			i++;
+			if (addeds.isEmpty()) {
+				o.put("success", false);
+				o.put("info", "no new browser install found from " + proposedPath);
+				return o;
+			} else {
 
+				String c = "Woot." + addeds.size() + " new browsers found</br>";
+				for (String s : addeds) {
+					c += s + "<br>";
+				}
+				o.put("info", c);
+
+				
+				// TODO freynaud remove formatitng from here.
+				o.put("content", getCapabilitiesDiv());
+				return o;
+			}
 		}
-		return lastok;
-
 	}
 
 }

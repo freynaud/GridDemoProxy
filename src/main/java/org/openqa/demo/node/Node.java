@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.openqa.demo.nodes.service.BrowserFinderUtils;
 import org.openqa.grid.selenium.utils.WebDriverJSONConfigurationUtils;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -22,19 +23,44 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 public class Node {
 
 	private static final Logger log = Logger.getLogger(Node.class.getName());
+	private BrowserFinderUtils finder = new BrowserFinderUtils();
+	private Map<String, String> errorPerBrowser = new HashMap<String, String>();
 
+	private int port = -1;
 	private URL registrationURL;
 	private File backup = new File("node.json");
 	private List<DesiredCapabilities> capabilities = new ArrayList<DesiredCapabilities>();
 	private Map<String, Object> configuration = new HashMap<String, Object>();
 
 	public Node() {
+		init();
+	}
+
+	private void init() {
+		try {
+			capabilities.add(finder.getDefaultIEInstall());
+		} catch (Throwable e) {
+			errorPerBrowser.put("internet eplorer", e.getMessage());
+		}
+		try {
+			capabilities.add(finder.getDefaultFirefoxInstall());
+		} catch (Throwable e) {
+			errorPerBrowser.put("firefox", e.getMessage());
+		}
+		try {
+			capabilities.add(finder.getDefaultChromeInstall());
+		} catch (Throwable e) {
+			errorPerBrowser.put("chrome", e.getMessage());
+		}
 
 	}
 
 	public void reset() {
 		capabilities.clear();
 		configuration.clear();
+		errorPerBrowser.clear();
+
+		init();
 	}
 
 	public File getBackupFile() {
@@ -138,6 +164,17 @@ public class Node {
 		} else {
 			throw new RuntimeException("NI");
 		}
+	}
 
+	public Map<String, String> getErrorPerBrowser() {
+		return errorPerBrowser;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
 	}
 }
