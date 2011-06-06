@@ -17,6 +17,11 @@ $(document).ready(function() {
 	
 	$("#capabilities").delegate(".validate_cap", "click", function(){
 		var index = $(this).attr('index');
+		
+		$(this).attr('src','/extra/resources/loader.gif');
+		$(this).attr('title','trying to run a test.');
+		$(this).attr('class','');
+		
 		$.ajax({
 			url : "?validate=" + index,
 			type : 'POST',
@@ -31,22 +36,6 @@ $(document).ready(function() {
 		}); // end ajax
 	});
 
-	/*$(".validate_cap").click(function(event) {
-		var index = $(this).attr('index');
-		$.ajax({
-			url : "?validate=" + index,
-			type : 'POST',
-			context : document.body,
-			success : function(data, textStatus, jqXHR) {
-				var result = eval('(' + jqXHR.responseText + ')');
-				updatePage(result);
-			},
-			error : function(jqXHR, textStatus, errorThrown) {
-				alert("Affreux. " + jqXHR.responseText);
-			}
-		}); // end ajax
-
-	});*/
 
 	var old;
 	$("#browserLocation").keypress(function(event) {

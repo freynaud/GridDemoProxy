@@ -39,6 +39,7 @@ public class BrowserFinderUtils {
 		Platform p = Platform.getCurrent();
 		DesiredCapabilities cap = DesiredCapabilities.chrome();
 		cap.setPlatform(Platform.getCurrent());
+		cap.setCapability("chrome.binary", c);
 		return cap;
 	}
 

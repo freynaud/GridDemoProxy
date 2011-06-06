@@ -22,6 +22,7 @@ import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.internal.exception.GridException;
 import org.openqa.grid.internal.listeners.RegistrationListener;
 import org.openqa.grid.web.utils.BrowserNameUtils;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -90,16 +91,18 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			DesiredCapabilities c = node.getCapabilities().get(i);
 			JSONObject o = new JSONObject();
 			try {
+				c.setCapability("valid", "running");
 				DesiredCapabilities realCap = wdValidator.validate(node.getPort(), c);
 				o.put("success", true);
 				BrowserFinderUtils.updateGuessedCapability(c, realCap);
 				o.put("info", "Success !");
-				c.setCapability("valid", true);
+				c.setCapability("valid", "true");
 			} catch (GridException e) {
 				o.put("success", false);
-				c.setCapability("valid", false);
+				c.setCapability("valid", "false");
+				c.setCapability("error", e.getMessage());
 				o.put("info", e.getMessage());
-				
+
 			}
 			o.put("capabilities", getCapabilitiesDiv());
 			return o;
@@ -163,6 +166,22 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 	private String getCapabilitiesDiv() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<div id='capabilities'>");
+
+		String iconp="?";
+		switch (node.getPlatform()) {
+		case LINUX:
+			iconp = "tux.png";
+			break;
+		case MAC:
+			iconp = "mac.png";
+			break;
+		case WINDOWS:
+
+			break;
+		default:
+			break;
+		}
+		builder.append("<img  src='/extra/resources/" + iconp + "' title='" + node.getPlatform() + "'  >");
 		builder.append("Discovered capabilities :");
 		builder.append("<ul>");
 		int i = 0;
@@ -170,25 +189,40 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			int index = node.getCapabilities().indexOf(capability);
 			builder.append("<li>");
 			builder.append("<div id='capability_" + index + "'>");
+			// icon state
+			String icon;
+			String alt;
+			String clazz = "";
+			String valid = (String) capability.getCapability("valid");
+			if ("running".equals(valid)) {
+				icon = "loader.gif";
+				alt = "running a test";
+			} else if ("true".equals(valid)) {
+				icon = "clean.png";
+				alt = "Browser working and ready.";
+			} else if ("false".equals(valid)) {
+				icon = "alert.png";
+				alt = "" + capability.getCapability("error");
+			} else {
+				icon = "run.png";
+				alt = "click to try the browser.";
+				clazz = "validate_cap";
+			}
+
+			// builder.append("<img index='"+index+"' width='32px' src='/extra/resources/loader.gif"
+			// + "' title='"+alt+"' class='"+clazz+"' >");
+			builder.append("<img index='" + index + "' src='/extra/resources/" + icon + "' title='" + alt + "' class='" + clazz + "' >");
 			// browser
 			String browser = capability.getBrowserName();
-			builder.append("<img src='/extra/resources/images/" + BrowserNameUtils.consoleIconName(capability) + ".png'  title='" + browser + "'>");
+			builder.append("<img src='/extra/resources/" + BrowserNameUtils.consoleIconName(capability) + ".png'  title='" + browser + "'>");
 			builder.append("<b> " + browser + "</b>");
 			// version
 			builder.append(", v:" + ("".equals(capability.getVersion()) ? "??" : capability.getVersion()));
 			// binary
 			if ("firefox".equals(browser)) {
 				builder.append(" , path:" + capability.getCapability(FirefoxDriver.BINARY));
-			}
-
-			Object validated = capability.getCapability("valid");
-
-			if (validated == null) {
-				builder.append("<a class='validate_cap' index='" + index + "' href='#' >validate</a>");
-			} else if ((Boolean) validated) {
-				builder.append("<div>checked - passed</div>");
-			} else {
-				builder.append("<div>checked - failed</div>");
+			} else if ("chrome".equals(browser)) {
+				builder.append(" , path:" + capability.getCapability("chrome.binary"));
 			}
 
 			builder.append("</div>");

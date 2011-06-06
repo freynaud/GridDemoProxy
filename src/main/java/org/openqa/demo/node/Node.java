@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.demo.nodes.service.BrowserFinderUtils;
 import org.openqa.grid.selenium.utils.WebDriverJSONConfigurationUtils;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -26,6 +27,7 @@ public class Node {
 	private BrowserFinderUtils finder = new BrowserFinderUtils();
 	private Map<String, String> errorPerBrowser = new HashMap<String, String>();
 
+	private Platform platform = Platform.getCurrent();
 	private int port = -1;
 	private URL registrationURL;
 	private File backup = new File("node.json");
@@ -176,5 +178,9 @@ public class Node {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public Platform getPlatform() {
+		return platform;
 	}
 }
