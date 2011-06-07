@@ -1,5 +1,21 @@
 $(document).ready(function() {
 
+	$("#hub_validate").click(function(event) {
+		var url = $("#hub_url").val();
+		$.ajax({
+			url : "?status=&url=" + url,
+			type : 'POST',
+			context : document.body,
+			success : function(data, textStatus, jqXHR) {
+				var result = eval('(' + jqXHR.responseText + ')');
+				updatePage(result);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				alert("Affreux. " + jqXHR.responseText);
+			}
+		}); // end ajax
+	});
+
 	$("#reset").click(function(event) {
 		$.ajax({
 			url : "?reset",
@@ -14,14 +30,14 @@ $(document).ready(function() {
 			}
 		}); // end ajax
 	});
-	
-	$("#capabilities").delegate(".validate_cap", "click", function(){
+
+	$("#capabilities").delegate(".validate_cap", "click", function() {
 		var index = $(this).attr('index');
-		
-		$(this).attr('src','/extra/resources/loader.gif');
-		$(this).attr('title','trying to run a test.');
-		$(this).attr('class','');
-		
+
+		$(this).attr('src', '/extra/resources/loader.gif');
+		$(this).attr('title', 'trying to run a test.');
+		$(this).attr('class', '');
+
 		$.ajax({
 			url : "?validate=" + index,
 			type : 'POST',
@@ -35,7 +51,6 @@ $(document).ready(function() {
 			}
 		}); // end ajax
 	});
-
 
 	var old;
 	$("#browserLocation").keypress(function(event) {
@@ -82,7 +97,7 @@ $(document).ready(function() {
 
 	$("#browserLocation").keyup(function(event) {
 		var keyCode = event.keyCode || event.which;
-		if ( keyCode!=9){
+		if (keyCode != 9) {
 			$("#completionHelp").html('');
 		}
 		var path = $(this).val();
@@ -91,11 +106,22 @@ $(document).ready(function() {
 
 	function updatePage(result) {
 		for ( var property in result) {
-			if ($('#' + property).length) {
-				$('#' + property).val(result[property]);
-				$('#' + property).html(result[property]);
-				
+			// update some attributes ?
+			if (property.indexOf('.') != -1) {
+				var id = property.split(".")[0];
+				var attr = property.split(".")[1];
+				if ($('#' + id).length) {
+					$('#' + id).attr(attr,result[property]);
+				}
+			// html or value.
+			} else {
+				if ($('#' + property).length) {
+					$('#' + property).val(result[property]);
+					$('#' + property).html(result[property]);
+
+				}
 			}
+
 		}
 	}
 
@@ -107,7 +133,6 @@ $(document).ready(function() {
 			success : function(data, textStatus, jqXHR) {
 				var result = eval('(' + jqXHR.responseText + ')');
 				updatePage(result);
-				
 
 			},
 			error : function(jqXHR, textStatus, errorThrown) {

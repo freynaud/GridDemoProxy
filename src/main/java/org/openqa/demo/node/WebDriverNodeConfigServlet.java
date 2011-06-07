@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -17,12 +19,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.demo.nodes.service.BrowserFinderUtils;
 import org.openqa.demo.nodes.service.FileSystemAjaxService;
+import org.openqa.demo.nodes.service.HubUtils;
 import org.openqa.demo.nodes.service.WebDriverValidationService;
-import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.internal.exception.GridException;
-import org.openqa.grid.internal.listeners.RegistrationListener;
 import org.openqa.grid.web.utils.BrowserNameUtils;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -35,6 +35,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 	private FileSystemAjaxService service = new FileSystemAjaxService();
 	private BrowserFinderUtils browserUtils = new BrowserFinderUtils();
 	private WebDriverValidationService wdValidator = new WebDriverValidationService();
+
 	public final static String PAGE_TITLE = "WebDriver node config";
 
 	private static final Logger log = Logger.getLogger(WebDriverNodeConfigServlet.class.getName());
@@ -59,6 +60,39 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 	}
 
 	private JSONObject processAjax(HttpServletRequest request, HttpServletResponse response) throws JSONException {
+
+		String status = request.getParameter("status");
+		if (status != null) {
+			JSONObject o = new JSONObject();
+			String url = request.getParameter("url");
+			URL hubUrl;
+			try {
+				hubUrl = new URL(url);
+				node.setHubURL(hubUrl);
+			} catch (MalformedURLException e) {
+				o.put("success", false);
+				o.put("hub_satus_icon.src", Icon.ALERT.path());
+				o.put("hub_satus_icon.title", url + " is not a valid url");
+				o.put("hubInfo", url + " is not a valid url");
+				return o;
+			}
+
+			HubUtils hubUtils = new HubUtils(node.getHubURL().getHost(), node.getHubURL().getPort());
+			boolean ok = hubUtils.isHubReachable();
+
+			o.put("success", ok);
+			if (ok) {
+				o.put("hub_satus_icon.src", Icon.CLEAN.path());
+				o.put("hub_satus_icon.title", "/extra/resources/clean.png");
+				o.put("hubInfo", "hub up and waiting for reg request.");
+			} else {
+				o.put("hub_satus_icon.src", Icon.ALERT.path());
+				o.put("hub_satus_icon.title", "Cannot contact " + hubUtils.getUrl());
+				o.put("hubInfo", "Cannot contact " + hubUtils.getUrl());
+			}
+
+			return o;
+		}
 
 		String reset = request.getParameter("reset");
 		if (reset != null) {
@@ -145,6 +179,31 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		}
 		builder.append("</div>");
 
+		String iconp = "?";
+		switch (node.getPlatform()) {
+		case LINUX:
+			iconp = "tux.png";
+			break;
+		case MAC:
+			iconp = "mac.png";
+			break;
+		case WINDOWS:
+
+			break;
+		default:
+			break;
+		}
+		builder.append("Platform : <img  src='/extra/resources/" + iconp + "' title='" + node.getPlatform() + "'  ></br>");
+
+		// hub
+
+		builder.append("<img ' id='hub_validate' src='"+Icon.VALIDATE.path()+"' >");
+		builder.append("<img ' id='hub_satus_icon' src='"+Icon.NOT_SURE.path()+"' >");
+		builder.append("hub : <input id='hub_url' value='http://localhost:4444/grid/status'>");
+		
+		builder.append("<div id ='hubInfo' ></div>");
+
+		// capabilities
 		builder.append(getCapabilitiesDiv());
 
 		builder.append("</div>");
@@ -167,22 +226,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<div id='capabilities'>");
 
-		String iconp="?";
-		switch (node.getPlatform()) {
-		case LINUX:
-			iconp = "tux.png";
-			break;
-		case MAC:
-			iconp = "mac.png";
-			break;
-		case WINDOWS:
-
-			break;
-		default:
-			break;
-		}
-		builder.append("<img  src='/extra/resources/" + iconp + "' title='" + node.getPlatform() + "'  >");
 		builder.append("Discovered capabilities :");
+		
 		builder.append("<ul>");
 		int i = 0;
 		for (DesiredCapabilities capability : node.getCapabilities()) {
@@ -190,28 +235,37 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			builder.append("<li>");
 			builder.append("<div id='capability_" + index + "'>");
 			// icon state
-			String icon;
+			
 			String alt;
+			
+			String iconValidate = Icon.VALIDATE.path();
+			String iconStatus =Icon.NOT_SURE.path();
+			
 			String clazz = "";
 			String valid = (String) capability.getCapability("valid");
 			if ("running".equals(valid)) {
-				icon = "loader.gif";
+				iconValidate = Icon.LOAD.path();
+				iconStatus = Icon.NOT_SURE.path();
 				alt = "running a test";
 			} else if ("true".equals(valid)) {
-				icon = "clean.png";
+				iconStatus = Icon.CLEAN.path();
+				iconValidate = Icon.VALIDATED.path();
 				alt = "Browser working and ready.";
+				clazz = "validate_cap";
 			} else if ("false".equals(valid)) {
-				icon = "alert.png";
+				iconStatus = Icon.ALERT.path();
+				iconValidate = Icon.VALIDATED.path();
+				clazz = "validate_cap";
 				alt = "" + capability.getCapability("error");
 			} else {
-				icon = "run.png";
-				alt = "click to try the browser.";
+				iconValidate = Icon.VALIDATE.path();
+				iconStatus = Icon.NOT_SURE.path();
 				clazz = "validate_cap";
+				alt = "click to run a test.";
 			}
 
-			// builder.append("<img index='"+index+"' width='32px' src='/extra/resources/loader.gif"
-			// + "' title='"+alt+"' class='"+clazz+"' >");
-			builder.append("<img index='" + index + "' src='/extra/resources/" + icon + "' title='" + alt + "' class='" + clazz + "' >");
+			builder.append("<img index='" + index + "' src='" + iconValidate + "' title='" + alt + "' class='" + clazz + "' >");
+			builder.append("<img index='" + index + "' src='" + iconStatus + "' title='" + alt + "' class='" + clazz + "' >");
 			// browser
 			String browser = capability.getBrowserName();
 			builder.append("<img src='/extra/resources/" + BrowserNameUtils.consoleIconName(capability) + ".png'  title='" + browser + "'>");
@@ -271,6 +325,41 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				return o;
 			}
 		}
+	}
+
+}
+
+enum Icon {
+	LOAD("/extra/resources/loader.gif"),
+
+	ALERT("/extra/resources/alert.png"),
+
+	CLEAN("/extra/resources/clean.png"),
+	
+	NOT_SURE("/extra/resources/kblackbox.png"),
+
+	VALIDATE("/extra/resources/cnrgrey.png"),
+	
+	VALIDATED("/extra/resources/cnrclient.png"),
+
+	FIREFOX("/extra/resources/firefox.png"),
+
+	CHROME("/extra/resources/chrome.png"),
+
+	AURORA("/extra/resources/aurora.png"),
+
+	MAC("/extra/resources/mac.png"),
+
+	LINUX("/extra/resources/tux.png");
+
+	private final String path;
+
+	Icon(String path) {
+		this.path = path;
+	}
+
+	public String path() {
+		return path;
 	}
 
 }

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,11 +35,21 @@ public class Node {
 	private List<DesiredCapabilities> capabilities = new ArrayList<DesiredCapabilities>();
 	private Map<String, Object> configuration = new HashMap<String, Object>();
 
+	private URL hub;
+
 	public Node() {
 		init();
 	}
 
 	private void init() {
+
+		try {
+			hub = new URL("http://localhost:4444");
+		} catch (MalformedURLException e1) {
+			// shouldnt happen
+			throw new RuntimeException("impossible");
+		}
+
 		try {
 			capabilities.add(finder.getDefaultIEInstall());
 		} catch (Throwable e) {
@@ -182,5 +193,13 @@ public class Node {
 
 	public Platform getPlatform() {
 		return platform;
+	}
+
+	public void setHubURL(URL hubUrl) {
+		this.hub = hubUrl;
+	}
+
+	public URL getHubURL() {
+		return hub;
 	}
 }
