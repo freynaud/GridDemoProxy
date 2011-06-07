@@ -3,7 +3,7 @@
 <suite verbose="0" name="Failed suite [Default suite]">
   <test name="Default test(failed)" preserve-order="false">
     <classes>
-      <class name="MyTest">
+      <class name="org.openqa.demo.nodes.service.WebDriverValidationService">
         <methods>
           <include name="test"/>
         </methods>

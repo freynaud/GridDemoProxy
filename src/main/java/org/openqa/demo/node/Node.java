@@ -66,6 +66,11 @@ public class Node {
 		} catch (Throwable e) {
 			errorPerBrowser.put("chrome", e.getMessage());
 		}
+		try {
+			capabilities.add(finder.getDefaultOperaInstall());
+		} catch (Throwable e) {
+			errorPerBrowser.put("opera", e.getMessage());
+		}
 
 	}
 

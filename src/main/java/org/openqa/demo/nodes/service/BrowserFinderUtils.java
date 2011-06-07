@@ -27,6 +27,17 @@ public class BrowserFinderUtils {
 		return c;
 
 	}
+	
+	public DesiredCapabilities getDefaultOperaInstall() {
+		DesiredCapabilities cap = DesiredCapabilities.opera();
+		Platform p = Platform.getCurrent();
+		cap.setPlatform(p);
+		String c = CommandLine.findExecutable("opera");
+		if (c == null){
+			throw new GridException("opera is not in your path. Is it installed ?");
+		}
+		return cap;
+	}
 
 	public DesiredCapabilities getDefaultChromeInstall() {
 		// check the chrome driver is here.
