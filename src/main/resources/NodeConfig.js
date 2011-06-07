@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-	$("#hub_validate").click(function(event) {
+	$("#hub_url").keyup(function(event) {
 		var url = $("#hub_url").val();
 		$.ajax({
 			url : "?status=&url=" + url,
@@ -19,6 +19,36 @@ $(document).ready(function() {
 	$("#reset").click(function(event) {
 		$.ajax({
 			url : "?reset",
+			type : 'POST',
+			context : document.body,
+			success : function(data, textStatus, jqXHR) {
+				var result = eval('(' + jqXHR.responseText + ')');
+				updatePage(result);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				alert("Affreux. " + jqXHR.responseText);
+			}
+		}); // end ajax
+	});
+	
+	$("#load").click(function(event) {
+		$.ajax({
+			url : "?load",
+			type : 'POST',
+			context : document.body,
+			success : function(data, textStatus, jqXHR) {
+				var result = eval('(' + jqXHR.responseText + ')');
+				updatePage(result);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				alert("Affreux. " + jqXHR.responseText);
+			}
+		}); // end ajax
+	});
+	
+	$("#save").click(function(event) {
+		$.ajax({
+			url : "?save",
 			type : 'POST',
 			context : document.body,
 			success : function(data, textStatus, jqXHR) {
@@ -111,19 +141,24 @@ $(document).ready(function() {
 				var id = property.split(".")[0];
 				var attr = property.split(".")[1];
 				if ($('#' + id).length) {
-					$('#' + id).attr(attr,result[property]);
+					$('#' + id).attr(attr, result[property]);
 				}
-			// html or value.
+				// html or value.
 			} else {
 				if ($('#' + property).length) {
-					$('#' + property).val(result[property]);
-					$('#' + property).html(result[property]);
-
+					var el = $('#' + property);
+					el.val(result[property]);
+					el.html(result[property]);
+					if (el.hasClass('autoHide')){
+						el.show().delay(3000).fadeOut();
+					}
 				}
 			}
 
 		}
 	}
+
+	
 
 	function validatePath(path) {
 		$.ajax({
@@ -140,5 +175,7 @@ $(document).ready(function() {
 			}
 		}); // end ajax
 	}
+
+	$("#hub_url").keyup();
 
 });

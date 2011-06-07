@@ -16,7 +16,7 @@ public class FileSystemAjaxService {
 	public  JSONObject seemsValid(String path) throws JSONException {
 		JSONObject o = new JSONObject();
 		o.put("success", false);
-		o.put("info", path+" is not a valid browser executable");
+		o.put("validFB", path+" is not a valid browser executable");
 		
 		
 		
@@ -24,7 +24,7 @@ public class FileSystemAjaxService {
 		if (f.exists() && f.isFile() ){
 			o.put("success", true);
 			DesiredCapabilities cap = new BrowserFinderUtils().discoverFirefoxCapability(new File(path));
-			o.put("info", path+" appear to be a valid firefox "+cap.getVersion()+" install.");
+			o.put("validFB", path+" appear to be a valid firefox "+cap.getVersion()+" install.");
 			
 		}
 		return o;
@@ -36,13 +36,13 @@ public class FileSystemAjaxService {
 		JSONObject o = new JSONObject();
 		o.put("success", true);
 		o.put("browserLocation", typed);
-		o.put("completionHelp", "");
+		o.put("completionFB", "");
 
 		String sep = System.getProperty("file.separator");
 		String[] pieces = typed.split(sep);
 		if (pieces.length == 0) {
 			o.put("success", false);
-			o.put("completionHelp", typed + " doesn't look like a valid path.");
+			o.put("completionFB", typed + " doesn't look like a valid path.");
 			return o;
 		}
 
@@ -56,7 +56,7 @@ public class FileSystemAjaxService {
 		File folder = new File(b.toString());
 		if (!folder.exists()) {
 			o.put("success", false);
-			o.put("completionHelp", folder + " should be a folder. It isn't.");
+			o.put("completionFB", folder + " should be a folder. It isn't.");
 			return o;
 		}
 		String lastTmp =pieces[pieces.length - 1];
@@ -78,7 +78,7 @@ public class FileSystemAjaxService {
 
 		if (children.length == 0) {
 			o.put("success", false);
-			o.put("completionHelp", "nothing in " + folder + " starting with " + last);
+			o.put("completionFB", "nothing in " + folder + " starting with " + last);
 			return o;
 		}
 
@@ -108,7 +108,7 @@ public class FileSystemAjaxService {
 			}
 			t.append("</ul>");
 			o.put("success", false);
-			o.put("completionHelp", t.toString());
+			o.put("completionFB", t.toString());
 		}
 		o.put("browserLocation", builder.toString());
 		return o;

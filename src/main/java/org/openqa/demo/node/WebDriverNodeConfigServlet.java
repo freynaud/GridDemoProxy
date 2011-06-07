@@ -99,8 +99,9 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			node.reset();
 			JSONObject o = new JSONObject();
 			o.put("success", true);
-			o.put("info", "");
+			o.put("resetFB", "");
 			o.put("capabilities", getCapabilitiesDiv());
+			o.put("configuration", getConfigurationDiv());
 			return o;
 		}
 		String typed = request.getParameter("completion");
@@ -112,6 +113,40 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		if (proposedPath != null) {
 			JSONObject o = seekBrowsers(proposedPath);
 			return o;
+		}
+
+		String load = request.getParameter("load");
+		if (load != null) {
+			JSONObject o = new JSONObject();
+			try {
+				node.load();
+				o.put("success", true);
+				o.put("loadFB", "Great success!");
+				o.put("capabilities", getCapabilitiesDiv());
+				o.put("configuration", getConfigurationDiv());
+				
+				return o;
+			} catch (IOException e) {
+				o.put("success", false);
+				o.put("loadFB", ":( " + e.getMessage());
+				return o;
+			}
+
+		}
+		String save = request.getParameter("save");
+		if (save != null) {
+			JSONObject o = new JSONObject();
+			try {
+				node.save();
+				o.put("success", true);
+				o.put("saveFB", "Great success! Config saved in "+node.getBackupFile().getAbsolutePath());
+				return o;
+			} catch (IOException e) {
+				o.put("success", false);
+				o.put("saveFB", ":( " + e.getMessage());
+				return o;
+			}
+			
 		}
 
 		String current = request.getParameter("current");
@@ -177,6 +212,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		for (String browser : node.getErrorPerBrowser().keySet()) {
 			builder.append(browser + " : " + node.getErrorPerBrowser().get(browser) + "</br>");
 		}
+
+		// Platform
 		builder.append("</div>");
 
 		String iconp = "?";
@@ -193,28 +230,42 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		default:
 			break;
 		}
-		builder.append("Platform : <img  src='/extra/resources/" + iconp + "' title='" + node.getPlatform() + "'  ></br>");
+		builder.append("<b>Platform :</b> <img  src='/extra/resources/" + iconp + "' title='" + node.getPlatform() + "'  ></br></br>");
 
 		// hub
+		builder.append("<b>Part of the grid : </b>");
+		builder.append(" <input id='hub_url' size='40' value='http://localhost:4444' >");
+		builder.append("<img ' id='hub_satus_icon' src='" + Icon.NOT_SURE.path() + "' >");
 
-		builder.append("<img ' id='hub_validate' src='"+Icon.VALIDATE.path()+"' >");
-		builder.append("<img ' id='hub_satus_icon' src='"+Icon.NOT_SURE.path()+"' >");
-		builder.append("hub : <input id='hub_url' value='http://localhost:4444/grid/status'>");
-		
-		builder.append("<div id ='hubInfo' ></div>");
+		builder.append("<div id ='hubInfo' ><i>edit the url to point to another hub.</i></div></br>");
 
 		// capabilities
 		builder.append(getCapabilitiesDiv());
 
-		builder.append("</div>");
+		builder.append("</div></br>");
 
-		builder.append("More :</br>");
+		// discover more browsers manually
+		builder.append("<b>Add more capabilities :</b></br>");
 		builder.append("<input id='browserLocation' size='50' >");
-		builder.append("<div id='completionHelp' ></div>");
-		builder.append("<div id='info' >provide the path to another browser executable to add its capability to the node.</div>");
+		builder.append("<div id='seekBrowserFB' class='autoHide'></div>");
+		builder.append("<div id='completionFB' class='autoHide' ></div></br>");
+
+		// configuration
+		builder.append("<b>Configuration:</b></br>");
+		builder.append("<div id='configuration'>");
+		builder.append(getConfigurationDiv());
+		builder.append("</div>");
+		
+		// save / load.
+		builder.append("<b>Backup:</b></br>");
+		builder.append("<div id='backupFile'  >"+node.getBackupFile().getAbsolutePath()+"</div>");
+		builder.append("<a id='load' href='#' >load</a>");
+		builder.append("<div id='loadFB' class='autoHide' ></div>");
+		builder.append("<a id='save' href='#' >save</a>");
+		builder.append("<div id='saveFB' class='autoHide' ></div>");
 
 		builder.append("<a id='reset' href='#' >reset</a>");
-		builder.append("<div id='validationMsg' >validation log</div>");
+		builder.append("<div id='resetFB' ></div>");
 		builder.append("</body>");
 		builder.append("</html>");
 
@@ -222,83 +273,105 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 	}
 
+	private String getConfigurationDiv() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("<ul>");
+		for (String key : node.getConfiguration().keySet()){
+			builder.append("<li>");
+			builder.append("<b>"+key+"</b> : ");
+			builder.append(node.getConfiguration().get(key));
+			builder.append("</li>");
+		}
+		builder.append("</ul>");
+		return builder.toString();
+	}
+
 	private String getCapabilitiesDiv() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<div id='capabilities'>");
 
-		builder.append("Discovered capabilities :");
-		
-		builder.append("<ul>");
+		builder.append("<b>Discovered capabilities :</b></br>");
+		builder.append("<table border='2'>");
+		builder.append("<tr>");
+		builder.append("<td>Status</td><td>Browser</td><td width='100px'>Version</td><td>Binary</td>");
+		builder.append("</tr>");
+		// builder.append("<ul>");
 		int i = 0;
 		for (DesiredCapabilities capability : node.getCapabilities()) {
+
 			int index = node.getCapabilities().indexOf(capability);
-			builder.append("<li>");
-			builder.append("<div id='capability_" + index + "'>");
+			// builder.append("<li>");
+			builder.append("<tr id='capability_" + index + "'>");
 			// icon state
-			
-			String alt;
-			
-			String iconValidate = Icon.VALIDATE.path();
-			String iconStatus =Icon.NOT_SURE.path();
-			
+
+			String status;
+
+			String iconStatus = Icon.NOT_SURE.path();
 			String clazz = "";
 			String valid = (String) capability.getCapability("valid");
 			if ("running".equals(valid)) {
-				iconValidate = Icon.LOAD.path();
 				iconStatus = Icon.NOT_SURE.path();
-				alt = "running a test";
+				status = "running a test";
 			} else if ("true".equals(valid)) {
 				iconStatus = Icon.CLEAN.path();
-				iconValidate = Icon.VALIDATED.path();
-				alt = "Browser working and ready.";
+				status = "browser ready";
 				clazz = "validate_cap";
 			} else if ("false".equals(valid)) {
 				iconStatus = Icon.ALERT.path();
-				iconValidate = Icon.VALIDATED.path();
 				clazz = "validate_cap";
-				alt = "" + capability.getCapability("error");
+				status = "" + capability.getCapability("error");
+
 			} else {
-				iconValidate = Icon.VALIDATE.path();
 				iconStatus = Icon.NOT_SURE.path();
 				clazz = "validate_cap";
-				alt = "click to run a test.";
+				status = "may be working.";
 			}
 
-			builder.append("<img index='" + index + "' src='" + iconValidate + "' title='" + alt + "' class='" + clazz + "' >");
-			builder.append("<img index='" + index + "' src='" + iconStatus + "' title='" + alt + "' class='" + clazz + "' >");
+			builder.append("<td>");
+			builder.append("<img index='" + index + "' src='" + iconStatus + "' title='" + status + "' class='" + clazz + "' >");
+			builder.append("</td>");
+
 			// browser
+			builder.append("<td>");
 			String browser = capability.getBrowserName();
 			builder.append("<img src='/extra/resources/" + BrowserNameUtils.consoleIconName(capability) + ".png'  title='" + browser + "'>");
-			builder.append("<b> " + browser + "</b>");
-			// version
-			builder.append(", v:" + ("".equals(capability.getVersion()) ? "??" : capability.getVersion()));
-			// binary
-			if ("firefox".equals(browser)) {
-				builder.append(" , path:" + capability.getCapability(FirefoxDriver.BINARY));
-			} else if ("chrome".equals(browser)) {
-				builder.append(" , path:" + capability.getCapability("chrome.binary"));
-			}
+			builder.append("</td>");
 
-			builder.append("</div>");
-			builder.append("</li>");
+			// version
+			builder.append("<td>");
+			builder.append(("".equals(capability.getVersion()) ? "??" : capability.getVersion()));
+			builder.append("</td>");
+
+			// binary
+			builder.append("<td>");
+			if ("firefox".equals(browser)) {
+				builder.append(capability.getCapability(FirefoxDriver.BINARY));
+			} else if ("chrome".equals(browser)) {
+				builder.append(capability.getCapability("chrome.binary"));
+			}
+			builder.append("<td>");
+
+			builder.append("</tr>");
+
 			i++;
 		}
+		builder.append("</table>");
 		return builder.toString();
 	}
 
 	public JSONObject seekBrowsers(String proposedPath) throws JSONException {
 		JSONObject o = new JSONObject();
 		o.put("success", true);
-		o.put("info", "");
+		o.put("seekBrowserFB", "");
 
 		File f = new File(proposedPath);
 		if (!f.exists()) {
 			o.put("success", false);
-			o.put("info", f + " is not a valid file.");
+			o.put("seekBrowserFB", f + " is not a valid file.");
 			return o;
 		} else if (!f.isFile()) {
 			o.put("success", false);
-			o.put("info", f + " is a folder.You need to specify a file.");
+			o.put("seekBrowserFB", f + " is a folder.You need to specify a file.");
 			return o;
 		} else {
 			List<String> addeds = new ArrayList<String>();
@@ -310,7 +383,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			}
 			if (addeds.isEmpty()) {
 				o.put("success", false);
-				o.put("info", "no new browser install found from " + proposedPath);
+				o.put("seekBrowserFB", "no new browser install found from " + proposedPath);
 				return o;
 			} else {
 
@@ -318,7 +391,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				for (String s : addeds) {
 					c += s + "<br>";
 				}
-				o.put("info", c);
+				o.put("seekBrowserFB", c);
 
 				// TODO freynaud remove formatitng from here.
 				o.put("capabilities", getCapabilitiesDiv());
@@ -335,12 +408,12 @@ enum Icon {
 	ALERT("/extra/resources/alert.png"),
 
 	CLEAN("/extra/resources/clean.png"),
-	
+
 	NOT_SURE("/extra/resources/kblackbox.png"),
 
-	VALIDATE("/extra/resources/cnrgrey.png"),
-	
-	VALIDATED("/extra/resources/cnrclient.png"),
+	VALIDATED("/extra/resources/cnrgrey.png"),
+
+	VALIDATE("/extra/resources/cnrclient.png"),
 
 	FIREFOX("/extra/resources/firefox.png"),
 

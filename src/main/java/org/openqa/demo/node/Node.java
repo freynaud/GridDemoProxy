@@ -17,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.demo.nodes.service.BrowserFinderUtils;
+import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.selenium.utils.WebDriverJSONConfigurationUtils;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -68,11 +69,16 @@ public class Node {
 
 	}
 
+	public void clearAll() {
+		capabilities.clear();
+		configuration.clear();
+		errorPerBrowser.clear();
+		
+	}
 	public void reset() {
 		capabilities.clear();
 		configuration.clear();
 		errorPerBrowser.clear();
-
 		init();
 	}
 
@@ -85,7 +91,8 @@ public class Node {
 	}
 
 	public void load() throws IOException, JSONException {
-		reset();
+		clearAll();
+		
 		JSONObject object = WebDriverJSONConfigurationUtils.loadJSON(backup.getCanonicalPath());
 		JSONArray caps = object.getJSONArray("capabilities");
 
@@ -125,7 +132,9 @@ public class Node {
 			for (String key : configuration.keySet()) {
 				c.put(key, configuration.get(key));
 			}
-			res.put("capabilites", caps);
+			c.put("hub", getHubURL());
+			
+			res.put("capabilities", caps);
 			res.put("configuration", c);
 			return res;
 		} catch (JSONException e) {
@@ -133,18 +142,15 @@ public class Node {
 		}
 	}
 
-	public void save() {
+	public void save() throws IOException {
 		JSONObject node = getJSON();
 		if (backup == null) {
 			throw new RuntimeException("Cannot save the config. File not specified.");
 		}
-		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(backup.getAbsolutePath()));
-			out.write(node.toString());
-			out.close();
-		} catch (IOException e) {
-			throw new RuntimeException("Cannot write the config in " + backup.getAbsolutePath() + e.getMessage());
-		}
+		BufferedWriter out = new BufferedWriter(new FileWriter(backup.getAbsolutePath()));
+		out.write(node.toString());
+		out.close();
+
 	}
 
 	public URL getRegistrationURL() {
