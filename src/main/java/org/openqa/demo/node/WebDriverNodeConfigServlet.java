@@ -7,7 +7,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -21,6 +23,7 @@ import org.openqa.demo.nodes.service.BrowserFinderUtils;
 import org.openqa.demo.nodes.service.FileSystemAjaxService;
 import org.openqa.demo.nodes.service.HubUtils;
 import org.openqa.demo.nodes.service.WebDriverValidationService;
+import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.internal.exception.GridException;
 import org.openqa.grid.web.utils.BrowserNameUtils;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -104,6 +107,37 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			o.put("configuration", getConfigurationDiv());
 			return o;
 		}
+
+		String update = request.getParameter("update");
+		if (update != null) {
+			for (Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
+				String p = (String) e.nextElement();
+				if (p.startsWith("capabilities")) {
+					String value = request.getParameter(p);
+					String[] pieces = p.split("\\.");
+					int capIndex = Integer.parseInt(pieces[1]);
+					String capKey = pieces[2];
+					String capValue = value;
+					node.getCapabilities().get(capIndex).setCapability(capKey, cast(capValue));
+				} else if (p.startsWith("configuration")) {
+					String value = request.getParameter(p);
+					String configKey = value.split("\\.")[1];
+					String configValue = value;
+					node.getConfiguration().put(configKey, cast(configValue));
+				} else {
+					System.out.println("? : " + p);
+				}
+
+			}
+
+			JSONObject o = new JSONObject();
+			o.put("success", true);
+			o.put("resetFB", "");
+			o.put("capabilities", getCapabilitiesDiv());
+			o.put("configuration", getConfigurationDiv());
+			return o;
+		}
+
 		String typed = request.getParameter("completion");
 		if (typed != null) {
 			return service.complete(typed);
@@ -124,7 +158,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				o.put("loadFB", "Great success!");
 				o.put("capabilities", getCapabilitiesDiv());
 				o.put("configuration", getConfigurationDiv());
-				
+
 				return o;
 			} catch (IOException e) {
 				o.put("success", false);
@@ -139,14 +173,14 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			try {
 				node.save();
 				o.put("success", true);
-				o.put("saveFB", "Great success! Config saved in "+node.getBackupFile().getAbsolutePath());
+				o.put("saveFB", "Great success! Config saved in " + node.getBackupFile().getAbsolutePath());
 				return o;
 			} catch (IOException e) {
 				o.put("success", false);
 				o.put("saveFB", ":( " + e.getMessage());
 				return o;
 			}
-			
+
 		}
 
 		String current = request.getParameter("current");
@@ -178,6 +212,20 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		}
 
 		return null;
+	}
+
+	/**
+	 * try to guess the type.If it looks like an int, return an int.
+	 * 
+	 * @param capValue
+	 * @return
+	 */
+	private Object cast(String capValue) {
+		try {
+			return Integer.parseInt(capValue);
+		} catch (Throwable e) {
+			return capValue;
+		}
 	}
 
 	private void write(String content, HttpServletResponse response) throws IOException {
@@ -255,10 +303,10 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		builder.append("<div id='configuration'>");
 		builder.append(getConfigurationDiv());
 		builder.append("</div>");
-		
+
 		// save / load.
 		builder.append("<b>Backup:</b></br>");
-		builder.append("<div id='backupFile'  >"+node.getBackupFile().getAbsolutePath()+"</div>");
+		builder.append("<div id='backupFile'  >" + node.getBackupFile().getAbsolutePath() + "</div>");
 		builder.append("<a id='load' href='#' >load</a>");
 		builder.append("<div id='loadFB' class='autoHide' ></div>");
 		builder.append("<a id='save' href='#' >save</a>");
@@ -276,9 +324,9 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 	private String getConfigurationDiv() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<ul>");
-		for (String key : node.getConfiguration().keySet()){
+		for (String key : node.getConfiguration().keySet()) {
 			builder.append("<li>");
-			builder.append("<b>"+key+"</b> : ");
+			builder.append("<b>" + key + "</b> : ");
 			builder.append(node.getConfiguration().get(key));
 			builder.append("</li>");
 		}
@@ -293,7 +341,11 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		builder.append("<b>Discovered capabilities :</b></br>");
 		builder.append("<table border='2'>");
 		builder.append("<tr>");
-		builder.append("<td>Status</td><td>Browser</td><td width='100px'>Version</td><td>Binary</td>");
+		builder.append("<td width='90px'>Status</td>");
+		builder.append("<td width='90px'>Browser</td>");
+		builder.append("<td width='90px' >Instances</td>");
+		builder.append("<td width='100px' >Version</td>");
+		builder.append("<td>Binary</td>");
 		builder.append("</tr>");
 		// builder.append("<ul>");
 		int i = 0;
@@ -302,10 +354,9 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			int index = node.getCapabilities().indexOf(capability);
 			// builder.append("<li>");
 			builder.append("<tr id='capability_" + index + "'>");
-			// icon state
 
+			// status
 			String status;
-
 			String iconStatus = Icon.NOT_SURE.path();
 			String clazz = "";
 			String valid = (String) capability.getCapability("valid");
@@ -337,6 +388,12 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			builder.append("<img src='/extra/resources/" + BrowserNameUtils.consoleIconName(capability) + ".png'  title='" + browser + "'>");
 			builder.append("</td>");
 
+			// instance
+			builder.append("<td>");
+			int instances = (Integer)(capability.getCapability(RegistrationRequest.MAX_INSTANCES));
+			builder.append("<input  size='2' class='" + RegistrationRequest.MAX_INSTANCES + "' index='" + index + "' value='" + instances + "' />");
+			builder.append("</td>");
+
 			// version
 			builder.append("<td>");
 			builder.append(("".equals(capability.getVersion()) ? "??" : capability.getVersion()));
@@ -348,6 +405,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				builder.append(capability.getCapability(FirefoxDriver.BINARY));
 			} else if ("chrome".equals(browser)) {
 				builder.append(capability.getCapability("chrome.binary"));
+			} else if ("opera".equals(browser)) {
+				builder.append(capability.getCapability("opera.binary"));
 			}
 			builder.append("<td>");
 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.internal.exception.GridException;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.browserlaunchers.locators.BrowserInstallation;
@@ -16,6 +17,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.os.CommandLine;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+
+import com.opera.core.systems.OperaPaths;
 
 public class BrowserFinderUtils {
 
@@ -32,10 +35,14 @@ public class BrowserFinderUtils {
 		DesiredCapabilities cap = DesiredCapabilities.opera();
 		Platform p = Platform.getCurrent();
 		cap.setPlatform(p);
-		String c = CommandLine.findExecutable("opera");
-		if (c == null){
+		OperaPaths path = new OperaPaths();
+		try {
+			String s = path.operaPath();
+			cap.setCapability("opera.binary", s);
+		}catch (Throwable t) {
 			throw new GridException("opera is not in your path. Is it installed ?");
 		}
+		cap.setCapability(RegistrationRequest.MAX_INSTANCES, 1);
 		return cap;
 	}
 
@@ -51,6 +58,7 @@ public class BrowserFinderUtils {
 		DesiredCapabilities cap = DesiredCapabilities.chrome();
 		cap.setPlatform(Platform.getCurrent());
 		cap.setCapability("chrome.binary", c);
+		cap.setCapability(RegistrationRequest.MAX_INSTANCES, 5);
 		return cap;
 	}
 
@@ -96,6 +104,7 @@ public class BrowserFinderUtils {
 		} catch (Exception e) {
 			log.warning("corrupted install ? " + e.getMessage());
 		}
+		ff.setCapability(RegistrationRequest.MAX_INSTANCES, 5);
 		return ff;
 	}
 

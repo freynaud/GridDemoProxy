@@ -1,4 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite hostname="ubuntu" name="org.openqa.demo.nodes.service.WebDriverValidationService" tests="1" failures="0" timestamp="7 Jun 2011 18:37:16 GMT" time="4.024" errors="0">
-  <testcase name="test" time="4.015" classname="org.openqa.demo.nodes.service.WebDriverValidationService"/>
+<testsuite hostname="ubuntu" tests="0" failures="0" timestamp="8 Jun 2011 11:45:52 GMT" time="0.004" errors="0">
 </testsuite>

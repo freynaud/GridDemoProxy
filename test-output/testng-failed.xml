@@ -5,7 +5,7 @@
     <classes>
       <class name="org.openqa.demo.nodes.service.WebDriverValidationService">
         <methods>
-          <include name="test"/>
+          <include name="test" invocation-numbers="0"/>
         </methods>
       </class>
     </classes>

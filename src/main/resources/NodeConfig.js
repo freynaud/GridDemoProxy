@@ -11,7 +11,7 @@ $(document).ready(function() {
 				updatePage(result);
 			},
 			error : function(jqXHR, textStatus, errorThrown) {
-				alert("Affreux. " + jqXHR.responseText);
+				error(jqXHR.responseText);
 			}
 		}); // end ajax
 	});
@@ -26,7 +26,7 @@ $(document).ready(function() {
 				updatePage(result);
 			},
 			error : function(jqXHR, textStatus, errorThrown) {
-				alert("Affreux. " + jqXHR.responseText);
+				error(jqXHR.responseText);
 			}
 		}); // end ajax
 	});
@@ -41,7 +41,21 @@ $(document).ready(function() {
 				updatePage(result);
 			},
 			error : function(jqXHR, textStatus, errorThrown) {
-				alert("Affreux. " + jqXHR.responseText);
+				error(jqXHR.responseText);
+			}
+		}); // end ajax
+	});
+	$("#capabilities").delegate(".maxInstances", "keyup", function() {
+		$.ajax({
+			url : "?update=&capabilities."+$(this).attr('index')+".maxInstances="+$(this).val(),
+			type : 'POST',
+			context : document.body,
+			success : function(data, textStatus, jqXHR) {
+				var result = eval('(' + jqXHR.responseText + ')');
+				updatePage(result);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				error(jqXHR.responseText);
 			}
 		}); // end ajax
 	});
@@ -56,7 +70,7 @@ $(document).ready(function() {
 				updatePage(result);
 			},
 			error : function(jqXHR, textStatus, errorThrown) {
-				alert("Affreux. " + jqXHR.responseText);
+				error(jqXHR.responseText);
 			}
 		}); // end ajax
 	});
@@ -77,7 +91,7 @@ $(document).ready(function() {
 				updatePage(result);
 			},
 			error : function(jqXHR, textStatus, errorThrown) {
-				alert("Affreux. " + jqXHR.responseText);
+				error(jqXHR.responseText);
 			}
 		}); // end ajax
 	});
@@ -102,7 +116,7 @@ $(document).ready(function() {
 						}
 					},
 					error : function(jqXHR, textStatus, errorThrown) {
-						alert("Affreux. " + jqXHR.responseText);
+						error(jqXHR.responseText);
 					}
 				}); // end ajax
 			}
@@ -119,7 +133,7 @@ $(document).ready(function() {
 					updatePage(result);
 				},
 				error : function(jqXHR, textStatus, errorThrown) {
-					alert("Affreux. " + jqXHR.responseText);
+					error(jqXHR.responseText);
 				}
 			}); // end ajax
 		}
@@ -158,7 +172,9 @@ $(document).ready(function() {
 		}
 	}
 
-	
+	function error(jqXHR){
+		alert("Affreux. " + jqXHR.responseText);
+	}
 
 	function validatePath(path) {
 		$.ajax({

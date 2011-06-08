@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results skipped="0" failed="0" total="1" passed="1">
+<testng-results skipped="0" failed="0" total="0" passed="0">
   <reporter-output>
   </reporter-output>
-  <suite name="Default suite" duration-ms="4024" started-at="2011-06-07T11:37:12Z" finished-at="2011-06-07T11:37:16Z">
+  <suite name="Default suite" duration-ms="4" started-at="2011-06-08T04:45:52Z" finished-at="2011-06-08T04:45:52Z">
     <groups>
     </groups>
-    <test name="Default test" duration-ms="4024" started-at="2011-06-07T11:37:12Z" finished-at="2011-06-07T11:37:16Z">
-      <class name="org.openqa.demo.nodes.service.WebDriverValidationService">
-        <test-method status="PASS" signature="test()" name="test" duration-ms="4015" started-at="2011-06-07T11:37:12Z" finished-at="2011-06-07T11:37:16Z">
-        </test-method>
-      </class>
+    <test name="Default test" duration-ms="4" started-at="2011-06-08T04:45:52Z" finished-at="2011-06-08T04:45:52Z">
     </test>
   </suite>
 </testng-results>
