@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -22,7 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.demo.nodes.service.BrowserFinderUtils;
-import org.openqa.demo.nodes.service.FileSystemAjaxService;
+import org.openqa.demo.nodes.service.FileSystemService;
 import org.openqa.demo.nodes.service.HubUtils;
 import org.openqa.demo.nodes.service.WebDriverValidationService;
 import org.openqa.grid.common.RegistrationRequest;
@@ -33,18 +31,24 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.google.common.io.ByteStreams;
 
+/**
+ * front end for the node.
+ * 
+ * @author freynaud
+ * 
+ */
 public class WebDriverNodeConfigServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 7490344466454529896L;
 	private Node node = new Node();
-	private FileSystemAjaxService service = new FileSystemAjaxService();
+	private FileSystemService service = new FileSystemService();
 	private BrowserFinderUtils browserUtils = new BrowserFinderUtils();
 	private WebDriverValidationService wdValidator = new WebDriverValidationService();
 
+	// fixed as the page itself is used as part of the node validation.
 	public final static String PAGE_TITLE = "WebDriver node config";
 
-	private static final Logger log = Logger.getLogger(WebDriverNodeConfigServlet.class.getName());
-
+	// the page
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		if (node.getPort() == -1) {
 			int port = request.getServerPort();
@@ -54,6 +58,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		write(page, response);
 	}
 
+	// the ajax requests
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		try {
@@ -64,84 +69,37 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		}
 	}
 
+	/**
+	 * ajax request linked to the page. Convention is {"A":"value a"} will
+	 * result in $(#A) content will be updated with value a using JQuery
+	 * locators.
+	 * 
+	 * @param request
+	 * @param response
+	 * @return a JSONObject representing the page element to updatz
+	 * @throws JSONException
+	 */
 	private JSONObject processAjax(HttpServletRequest request, HttpServletResponse response) throws JSONException {
 
 		String status = request.getParameter("status");
 		if (status != null) {
-			JSONObject o = new JSONObject();
 			String url = request.getParameter("url");
-			URL hubUrl;
-			try {
-				hubUrl = new URL(url);
-				node.setHubURL(hubUrl);
-			} catch (MalformedURLException e) {
-				o.put("success", false);
-				o.put("hub_satus_icon.src", Icon.ALERT.path());
-				o.put("hub_satus_icon.title", url + " is not a valid url");
-				o.put("hubInfo", url + " is not a valid url");
-				return o;
-			}
-
-			HubUtils hubUtils = new HubUtils(node.getHubURL().getHost(), node.getHubURL().getPort());
-			boolean ok = hubUtils.isHubReachable();
-
-			o.put("success", ok);
-			if (ok) {
-				o.put("hub_satus_icon.src", Icon.CLEAN.path());
-				o.put("hub_satus_icon.title", "/extra/resources/clean.png");
-				o.put("hubInfo", "hub up and waiting for reg request.");
-			} else {
-				o.put("hub_satus_icon.src", Icon.ALERT.path());
-				o.put("hub_satus_icon.title", "Cannot contact " + hubUtils.getUrl());
-				o.put("hubInfo", "Cannot contact " + hubUtils.getUrl());
-			}
-			o.put("configuration", getConfigurationDiv());
-			o.put("json", getJSONContent());
-			return o;
+			return pingHub(url);
 		}
 
 		String reset = request.getParameter("reset");
 		if (reset != null) {
-			node.reset();
-			JSONObject o = new JSONObject();
-			o.put("success", true);
-			o.put("resetFB", "");
-			o.put("capabilities", getCapabilitiesDiv());
-			o.put("configuration", getConfigurationDiv());
-			o.put("json", getJSONContent());
-			return o;
+			return loadDefault();
 		}
 
 		String update = request.getParameter("update");
 		if (update != null) {
-			for (Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
-				String p = (String) e.nextElement();
-				if (p.startsWith("capabilities")) {
-					String value = request.getParameter(p);
-					String[] pieces = p.split("\\.");
-					int capIndex = Integer.parseInt(pieces[1]);
-					String capKey = pieces[2];
-					String capValue = value;
-					node.getCapabilities().get(capIndex).setCapability(capKey, cast(capValue));
-				} else if (p.startsWith("configuration")) {
-					String value = request.getParameter(p);
-					String configKey = value.split("\\.")[1];
-					String configValue = value;
-					node.getConfiguration().put(configKey, cast(configValue));
-				} else {
-					System.out.println("? : " + p);
-				}
+			return updateNode(request);
+		}
 
-			}
-
-			JSONObject o = new JSONObject();
-			o.put("success", true);
-			o.put("resetFB", "");
-			o.put("capabilities", getCapabilitiesDiv());
-			o.put("configuration", getConfigurationDiv());
-			o.put("json", getJSONContent());
-
-			return o;
+		String delete = request.getParameter("remove");
+		if (delete != null) {
+			return removeCapability(delete);
 		}
 
 		String typed = request.getParameter("completion");
@@ -151,43 +109,16 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 		String proposedPath = request.getParameter("submit");
 		if (proposedPath != null) {
-			JSONObject o = seekBrowsers(proposedPath);
-			return o;
+			return seekBrowsers(proposedPath);
 		}
 
 		String load = request.getParameter("load");
 		if (load != null) {
-			JSONObject o = new JSONObject();
-			try {
-				node.load();
-				o.put("success", true);
-				o.put("loadFB", "Great success!");
-				o.put("capabilities", getCapabilitiesDiv());
-				o.put("configuration", getConfigurationDiv());
-				o.put("json", getJSONContent());
-
-				return o;
-			} catch (IOException e) {
-				o.put("success", false);
-				o.put("loadFB", ":( " + e.getMessage());
-				return o;
-			}
-
+			return loadFromFile();
 		}
 		String save = request.getParameter("save");
 		if (save != null) {
-			JSONObject o = new JSONObject();
-			try {
-				node.save();
-				o.put("success", true);
-				o.put("saveFB", "Great success! Config saved in " + node.getBackupFile().getAbsolutePath());
-				return o;
-			} catch (IOException e) {
-				o.put("success", false);
-				o.put("saveFB", ":( " + e.getMessage());
-				return o;
-			}
-
+			return saveToFile();
 		}
 
 		String current = request.getParameter("current");
@@ -197,29 +128,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		}
 		String index = request.getParameter("validate");
 		if (index != null) {
-			int i = Integer.parseInt(index);
-			DesiredCapabilities c = node.getCapabilities().get(i);
-			JSONObject o = new JSONObject();
-			try {
-				c.setCapability("valid", "running");
-				DesiredCapabilities realCap = wdValidator.validate(node.getPort(), c);
-				o.put("success", true);
-				BrowserFinderUtils.updateGuessedCapability(c, realCap);
-				o.put("info", "Success !");
-				c.setCapability("valid", "true");
-			} catch (GridException e) {
-				o.put("success", false);
-				c.setCapability("valid", "false");
-				c.setCapability("error", e.getMessage());
-				o.put("info", e.getMessage());
-
-			}
-			o.put("capabilities", getCapabilitiesDiv());
-			o.put("configuration", getConfigurationDiv());
-			o.put("json", getJSONContent());
-			return o;
+			return valideCapability(index);
 		}
-
 		return null;
 	}
 
@@ -251,12 +161,16 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		}
 	}
 
+	/**
+	 * get the content of the html page
+	 * 
+	 * @return
+	 */
 	private String getPage() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<html>");
 
 		builder.append("<head>");
-
 		builder.append("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js'></script>");
 		builder.append("<script src='resources/NodeConfig.js'></script>");
 		builder.append("<link rel='stylesheet' type='text/css' href='resources/NodeConfig.css' />");
@@ -269,10 +183,9 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		for (String browser : node.getErrorPerBrowser().keySet()) {
 			builder.append(browser + " : " + node.getErrorPerBrowser().get(browser) + "</br>");
 		}
-
-		// Platform
 		builder.append("</div>");
 
+		// Platform
 		String iconp = "?";
 		switch (node.getPlatform()) {
 		case LINUX:
@@ -380,24 +293,10 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 			b.append("\t}\n");
 			b.append("}\n");
-			return "<pre>"+b.toString()+"</pre>";
+			return "<pre>" + b.toString() + "</pre>";
 		} catch (JSONException js) {
 			return "jspn parsing error " + js.getMessage();
 		}
-
-	}
-
-	private String getConfigurationDiv() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("<ul>");
-		for (String key : node.getConfiguration().keySet()) {
-			builder.append("<li>");
-			builder.append("<b>" + key + "</b> : ");
-			builder.append(node.getConfiguration().get(key));
-			builder.append("</li>");
-		}
-		builder.append("</ul>");
-		return builder.toString();
 	}
 
 	private String getCapabilitiesDiv() {
@@ -413,12 +312,12 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		builder.append("<td width='100px' >Version</td>");
 		builder.append("<td>Binary</td>");
 		builder.append("</tr>");
-		// builder.append("<ul>");
+
 		int i = 0;
 		for (DesiredCapabilities capability : node.getCapabilities()) {
 
 			int index = node.getCapabilities().indexOf(capability);
-			// builder.append("<li>");
+
 			builder.append("<tr id='capability_" + index + "'>");
 
 			// status
@@ -446,6 +345,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 			builder.append("<td>");
 			builder.append("<img index='" + index + "' src='" + iconStatus + "' title='" + status + "' class='" + clazz + "' >");
+			builder.append("<img index='" + index + "' src='" + Icon.DELETE.path() + "' title='Delete' class='remove' >");
 			builder.append("</td>");
 
 			// browser
@@ -484,7 +384,29 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		return builder.toString();
 	}
 
-	public JSONObject seekBrowsers(String proposedPath) throws JSONException {
+	private String getConfigurationDiv() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("<ul>");
+		for (String key : node.getConfiguration().keySet()) {
+			builder.append("<li>");
+			builder.append("<b>" + key + "</b> : ");
+			builder.append(node.getConfiguration().get(key));
+			builder.append("</li>");
+		}
+		builder.append("</ul>");
+		return builder.toString();
+	}
+
+	/*
+	 * json stuff
+	 */
+
+	/**
+	 * try to find as many browser as possible from the given path. TODO
+	 * freynaud : Only tested with firefox. does it make sense with other
+	 * browsers ?
+	 */
+	private JSONObject seekBrowsers(String proposedPath) throws JSONException {
 		JSONObject o = new JSONObject();
 		o.put("success", true);
 		o.put("seekBrowserFB", "");
@@ -517,47 +439,194 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 					c += s + "<br>";
 				}
 				o.put("seekBrowserFB", c);
-
-				// TODO freynaud remove formatitng from here.
 				o.put("capabilities", getCapabilitiesDiv());
+				o.put("json", getJSONContent());
 				return o;
 			}
 		}
 	}
 
-}
+	/**
+	 * check the capability with index index in the node capabilities list, and
+	 * try to run a simple test on it, to validate that everything is fine. Will
+	 * try to get more info like the version too.
+	 * 
+	 * @param index
+	 * @return
+	 * @throws JSONException
+	 */
+	private JSONObject valideCapability(String index) throws JSONException {
+		int i = Integer.parseInt(index);
+		DesiredCapabilities c = node.getCapabilities().get(i);
+		JSONObject o = new JSONObject();
+		try {
+			c.setCapability("valid", "running");
+			DesiredCapabilities realCap = wdValidator.validate(node.getPort(), c);
+			o.put("success", true);
+			BrowserFinderUtils.updateGuessedCapability(c, realCap);
+			o.put("info", "Success !");
+			c.setCapability("valid", "true");
+		} catch (GridException e) {
+			o.put("success", false);
+			c.setCapability("valid", "false");
+			c.setCapability("error", e.getMessage());
+			o.put("info", e.getMessage());
 
-enum Icon {
-	LOAD("/extra/resources/loader.gif"),
-
-	ALERT("/extra/resources/alert.png"),
-
-	CLEAN("/extra/resources/clean.png"),
-
-	NOT_SURE("/extra/resources/kblackbox.png"),
-
-	VALIDATED("/extra/resources/cnrgrey.png"),
-
-	VALIDATE("/extra/resources/cnrclient.png"),
-
-	FIREFOX("/extra/resources/firefox.png"),
-
-	CHROME("/extra/resources/chrome.png"),
-
-	AURORA("/extra/resources/aurora.png"),
-
-	MAC("/extra/resources/mac.png"),
-
-	LINUX("/extra/resources/tux.png");
-
-	private final String path;
-
-	Icon(String path) {
-		this.path = path;
+		}
+		o.put("capabilities", getCapabilitiesDiv());
+		o.put("configuration", getConfigurationDiv());
+		o.put("json", getJSONContent());
+		return o;
 	}
 
-	public String path() {
-		return path;
+	/**
+	 * save the node description to the underlying json config file
+	 * 
+	 * @return
+	 * @throws JSONException
+	 */
+	private JSONObject saveToFile() throws JSONException {
+		JSONObject o = new JSONObject();
+		try {
+			node.save();
+			o.put("success", true);
+			o.put("saveFB", "Great success! Config saved in " + node.getBackupFile().getAbsolutePath());
+			return o;
+		} catch (IOException e) {
+			o.put("success", false);
+			o.put("saveFB", ":( " + e.getMessage());
+			return o;
+		}
+	}
+
+	/**
+	 * load from the underlying config file
+	 * 
+	 * @return
+	 * @throws JSONException
+	 */
+	private JSONObject loadFromFile() throws JSONException {
+		JSONObject o = new JSONObject();
+		try {
+			node.load();
+			o.put("success", true);
+			o.put("loadFB", "Great success!");
+			o.put("capabilities", getCapabilitiesDiv());
+			o.put("configuration", getConfigurationDiv());
+			o.put("json", getJSONContent());
+
+			return o;
+		} catch (IOException e) {
+			o.put("success", false);
+			o.put("loadFB", ":( " + e.getMessage());
+			return o;
+		}
+	}
+
+	/**
+	 * update something on the node with the following convention :
+	 * capabilities.index.key=value configuration.key=value
+	 * 
+	 * @param request
+	 * @return
+	 * @throws JSONException
+	 */
+	private JSONObject updateNode(HttpServletRequest request) throws JSONException {
+		for (Enumeration e = request.getParameterNames(); e.hasMoreElements();) {
+			String p = (String) e.nextElement();
+			if (p.startsWith("capabilities")) {
+				String value = request.getParameter(p);
+				String[] pieces = p.split("\\.");
+				int capIndex = Integer.parseInt(pieces[1]);
+				String capKey = pieces[2];
+				String capValue = value;
+				node.getCapabilities().get(capIndex).setCapability(capKey, cast(capValue));
+			} else if (p.startsWith("configuration")) {
+				String value = request.getParameter(p);
+				String configKey = value.split("\\.")[1];
+				String configValue = value;
+				node.getConfiguration().put(configKey, cast(configValue));
+			}
+
+		}
+		JSONObject o = new JSONObject();
+		o.put("success", false);
+		o.put("capabilities", getCapabilitiesDiv());
+		o.put("configuration", getConfigurationDiv());
+		o.put("json", getJSONContent());
+		return o;
+	}
+
+	/**
+	 * load the default settings for the current platform.
+	 * 
+	 * @return
+	 * @throws JSONException
+	 */
+	private JSONObject loadDefault() throws JSONException {
+		node.loadDefault();
+		JSONObject o = new JSONObject();
+		o.put("success", true);
+		o.put("resetFB", "");
+		o.put("capabilities", getCapabilitiesDiv());
+		o.put("configuration", getConfigurationDiv());
+		o.put("json", getJSONContent());
+
+		return o;
+	}
+
+	/**
+	 * check if the hub is up and running.
+	 */
+	private JSONObject pingHub(String url) throws JSONException {
+		JSONObject o = new JSONObject();
+
+		URL hubUrl;
+		try {
+			hubUrl = new URL(url);
+			node.setHubURL(hubUrl);
+		} catch (MalformedURLException e) {
+			o.put("success", false);
+			o.put("hub_satus_icon.src", Icon.ALERT.path());
+			o.put("hub_satus_icon.title", url + " is not a valid url");
+			o.put("hubInfo", url + " is not a valid url");
+			return o;
+		}
+
+		HubUtils hubUtils = new HubUtils(node.getHubURL().getHost(), node.getHubURL().getPort());
+		boolean ok = hubUtils.isHubReachable();
+
+		o.put("success", ok);
+		if (ok) {
+			o.put("hub_satus_icon.src", Icon.CLEAN.path());
+			o.put("hub_satus_icon.title", "/extra/resources/clean.png");
+			o.put("hubInfo", "hub up and waiting for reg request.");
+		} else {
+			o.put("hub_satus_icon.src", Icon.ALERT.path());
+			o.put("hub_satus_icon.title", "Cannot contact " + hubUtils.getUrl());
+			o.put("hubInfo", "Cannot contact " + hubUtils.getUrl());
+		}
+		o.put("configuration", getConfigurationDiv());
+		o.put("json", getJSONContent());
+		return o;
+	}
+
+	/**
+	 * delete the capability with index = i on the node
+	 * 
+	 * @param delete
+	 * @return
+	 * @throws JSONException
+	 */
+	private JSONObject removeCapability(String index) throws JSONException {
+		int i = Integer.parseInt(index);
+		node.getCapabilities().remove(i);
+		JSONObject o = new JSONObject();
+		o.put("success", true);
+		o.put("capabilities", getCapabilitiesDiv());
+		o.put("json", getJSONContent());
+		return o;
+
 	}
 
 }

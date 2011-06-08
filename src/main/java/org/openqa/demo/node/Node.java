@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,30 +25,33 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class Node {
 
-	private static final Logger log = Logger.getLogger(Node.class.getName());
-	private BrowserFinderUtils finder = new BrowserFinderUtils();
-	private Map<String, String> errorPerBrowser = new HashMap<String, String>();
-
-	private Platform platform = Platform.getCurrent();
-	private int port = -1;
-	private URL registrationURL;
-	private File backup = new File("node.json");
+	// node description
 	private List<DesiredCapabilities> capabilities = new ArrayList<DesiredCapabilities>();
 	private Map<String, Object> configuration = new HashMap<String, Object>();
 
+	// helpers
+	private BrowserFinderUtils finder = new BrowserFinderUtils();
+	private Map<String, String> errorPerBrowser = new HashMap<String, String>();
+	private int port = -1;
+	private File backup = new File("node.json");
+
 	public Node() {
-		init();
+		loadDefault();
 	}
 
-	private void init() {
-
+	/**
+	 * loads the default node settings for the current platform. Doesn't
+	 * validate much.
+	 */
+	public void loadDefault() {
+		clearAll();
 		try {
 			setHubURL(new URL("http://localhost:4444"));
 		} catch (MalformedURLException e1) {
 			// shouldnt happen
 			throw new RuntimeException("impossible");
 		}
-		
+
 		configuration.put(RegistrationRequest.CLEAN_UP_CYCLE, 5000);
 		configuration.put(RegistrationRequest.TIME_OUT, 30000);
 		configuration.put(RegistrationRequest.MAX_SESSION, 5);
@@ -77,28 +79,37 @@ public class Node {
 
 	}
 
-	public void clearAll() {
+	private void clearAll() {
 		capabilities.clear();
 		configuration.clear();
 		errorPerBrowser.clear();
-
 	}
 
-	public void reset() {
-		capabilities.clear();
-		configuration.clear();
-		errorPerBrowser.clear();
-		init();
-	}
-
+	/**
+	 * get the location of the json config file describing this node. See also
+	 * {@link Node#load()} and {@link Node#save()}
+	 * 
+	 * @return
+	 */
 	public File getBackupFile() {
 		return backup;
 	}
 
+	/**
+	 * set the location of the config file describing the node.
+	 * 
+	 * @param backup
+	 */
 	public void setBackupFile(File backup) {
 		this.backup = backup;
 	}
 
+	/**
+	 * Loads a node description from the backup file.
+	 * 
+	 * @throws IOException
+	 * @throws JSONException
+	 */
 	public void load() throws IOException, JSONException {
 		clearAll();
 
@@ -122,6 +133,28 @@ public class Node {
 		}
 	}
 
+	/**
+	 * saves the current node description in the associated json file.
+	 * 
+	 * @throws IOException
+	 */
+	public void save() throws IOException {
+		JSONObject node = getJSON();
+		if (backup == null) {
+			throw new RuntimeException("Cannot save the config. File not specified.");
+		}
+		BufferedWriter out = new BufferedWriter(new FileWriter(backup.getAbsolutePath()));
+		out.write(node.toString());
+		out.close();
+
+	}
+
+	/**
+	 * get the JSON object representing the node. That's the object grid expect
+	 * in a registration request.
+	 * 
+	 * @return
+	 */
 	public JSONObject getJSON() {
 		try {
 			JSONObject res = new JSONObject();
@@ -151,25 +184,6 @@ public class Node {
 		}
 	}
 
-	public void save() throws IOException {
-		JSONObject node = getJSON();
-		if (backup == null) {
-			throw new RuntimeException("Cannot save the config. File not specified.");
-		}
-		BufferedWriter out = new BufferedWriter(new FileWriter(backup.getAbsolutePath()));
-		out.write(node.toString());
-		out.close();
-
-	}
-
-	public URL getRegistrationURL() {
-		return registrationURL;
-	}
-
-	public void setRegistrationURL(URL registrationURL) {
-		this.registrationURL = registrationURL;
-	}
-
 	public List<DesiredCapabilities> getCapabilities() {
 		return capabilities;
 	}
@@ -178,20 +192,35 @@ public class Node {
 		return configuration;
 	}
 
+	/**
+	 * add a new browser install to the node. Validate that it's not a dup.
+	 * browsers are equals when their binary is.
+	 * @param cap
+	 * @return
+	 */
 	public boolean addNewBrowserInstall(DesiredCapabilities cap) {
 		// 2 firefox installs are equal if the point to the same exe.
-		if ("firefox".equals(cap.getBrowserName())) {
-			for (DesiredCapabilities c : getCapabilities()) {
-				String path = (String) c.getCapability(FirefoxDriver.BINARY);
-				if (path != null && path.equals(cap.getCapability(FirefoxDriver.BINARY))) {
-					return false;
-				}
-			}
-			capabilities.add(cap);
-			return true;
+		String key = null;
+		String browser = cap.getBrowserName();
+		if ("firefox".equals(browser)) {
+			key = FirefoxDriver.BINARY;
+		} else if ("chrome".equals(browser)) {
+			key = "chrome.binary";
+		} else if ("opera".equals(browser)) {
+			key = "opera.benary";
 		} else {
 			throw new RuntimeException("NI");
 		}
+		String newOne = (String) cap.getCapability(key);
+
+		for (DesiredCapabilities c : getCapabilities()) {
+			String path = (String) c.getCapability(key);
+			if (path != null && path.equals(newOne)) {
+				return false;
+			}
+		}
+		capabilities.add(cap);
+		return true;
 	}
 
 	public Map<String, String> getErrorPerBrowser() {
@@ -206,10 +235,6 @@ public class Node {
 		this.port = port;
 	}
 
-	public Platform getPlatform() {
-		return platform;
-	}
-
 	public void setHubURL(URL hubUrl) {
 		configuration.put("hub", hubUrl);
 	}
@@ -220,5 +245,9 @@ public class Node {
 		} catch (MalformedURLException e) {
 			throw new GridException(configuration.get("hub") + " is not a valid URL");
 		}
+	}
+
+	public Platform getPlatform() {
+		return Platform.getCurrent();
 	}
 }

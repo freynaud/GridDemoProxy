@@ -5,16 +5,25 @@ import java.net.URL;
 
 import org.openqa.demo.node.WebDriverNodeConfigServlet;
 import org.openqa.grid.internal.exception.GridException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
-import com.opera.core.systems.OperaDriver;
-
+/**
+ * run simple test to check the settings.
+ * 
+ * @author freynaud
+ * 
+ */
 public class WebDriverValidationService {
 
+	/**
+	 * run a test to see that everything is properly setup, and get a more
+	 * accurate desiredCapabilities
+	 * 
+	 * @param port
+	 * @param cap
+	 * @return
+	 */
 	public DesiredCapabilities validate(int port, DesiredCapabilities cap) {
 		URL url = null;
 		try {
@@ -40,5 +49,4 @@ public class WebDriverValidationService {
 			}
 		}
 	}
-
 }

@@ -60,6 +60,23 @@ $(document).ready(function() {
 		}); // end ajax
 	});
 	
+	
+	
+	$("#capabilities").delegate(".remove", "click", function() {
+		$.ajax({
+			url : "?remove="+$(this).attr('index'),
+			type : 'POST',
+			context : document.body,
+			success : function(data, textStatus, jqXHR) {
+				var result = eval('(' + jqXHR.responseText + ')');
+				updatePage(result);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				error(jqXHR.responseText);
+			}
+		}); // end ajax
+	});
+	
 	$("#save").click(function(event) {
 		$.ajax({
 			url : "?save",

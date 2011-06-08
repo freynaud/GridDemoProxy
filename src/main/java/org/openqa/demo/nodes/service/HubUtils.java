@@ -15,15 +15,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.grid.internal.exception.GridException;
 
+/**
+ * to check if the hub is there.
+ * 
+ * @author freynaud
+ * 
+ */
 public class HubUtils {
 
 	private URL status;
 
+	@SuppressWarnings("unused")
 	private HubUtils() {
-
 	}
 
-	
 	public HubUtils(String host, int port) {
 		String u = "http://" + host + ":" + port + "/grid/status";
 		try {
@@ -42,13 +47,19 @@ public class HubUtils {
 		}
 	}
 
+	/**
+	 * get info about the node with the given id.
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public JSONObject getProxyDetails(String id) {
 		try {
 			DefaultHttpClient client = new DefaultHttpClient();
 
 			JSONObject o = new JSONObject();
-			o.put("id",id);
-			
+			o.put("id", id);
+
 			BasicHttpEntityEnclosingRequest r = new BasicHttpEntityEnclosingRequest("POST", status.toExternalForm());
 			r.setEntity(new StringEntity(o.toString()));
 
@@ -62,6 +73,14 @@ public class HubUtils {
 		}
 	}
 
+	/**
+	 * get the json content from the hub.
+	 * 
+	 * @param resp
+	 * @return
+	 * @throws IOException
+	 * @throws JSONException
+	 */
 	private JSONObject extractObject(HttpResponse resp) throws IOException, JSONException {
 		BufferedReader rd = new BufferedReader(new InputStreamReader(resp.getEntity().getContent()));
 		StringBuffer s = new StringBuffer();
@@ -72,7 +91,6 @@ public class HubUtils {
 		rd.close();
 		return new JSONObject(s.toString());
 	}
-
 
 	public URL getUrl() {
 		return status;

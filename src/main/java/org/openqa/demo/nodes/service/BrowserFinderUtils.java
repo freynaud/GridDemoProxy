@@ -20,17 +20,31 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.opera.core.systems.OperaPaths;
 
+/**
+ * helpers to find the default browsers settings.
+ * 
+ * @author freynaud
+ */
 public class BrowserFinderUtils {
 
 	private static final Logger log = Logger.getLogger(BrowserFinderUtils.class.getName());
 
+	/**
+	 * use webdriver internals to guess where firefox is.
+	 * 
+	 * @return
+	 */
 	public DesiredCapabilities getDefaultFirefoxInstall() {
 		BrowserInstallation install = new Firefox3Locator().findBrowserLocationOrFail();
 		DesiredCapabilities c = discoverFirefoxCapability(new File(install.launcherFilePath()));
 		return c;
-
 	}
-	
+
+	/**
+	 * use opera driver internals to guess where opera is.
+	 * 
+	 * @return
+	 */
 	public DesiredCapabilities getDefaultOperaInstall() {
 		DesiredCapabilities cap = DesiredCapabilities.opera();
 		Platform p = Platform.getCurrent();
@@ -39,19 +53,24 @@ public class BrowserFinderUtils {
 		try {
 			String s = path.operaPath();
 			cap.setCapability("opera.binary", s);
-		}catch (Throwable t) {
+		} catch (Throwable t) {
 			throw new GridException("opera is not in your path. Is it installed ?");
 		}
 		cap.setCapability(RegistrationRequest.MAX_INSTANCES, 1);
 		return cap;
 	}
 
+	/**
+	 * use webdriver internals to guess where chrome is.
+	 * 
+	 * @return
+	 */
 	public DesiredCapabilities getDefaultChromeInstall() {
 		// check the chrome driver is here.
 		ChromeDriverService.createDefaultService();
 		// check the chrome itself is installed.
 		String c = CommandLine.findExecutable("google-chrome");
-		if (c == null){
+		if (c == null) {
 			throw new GridException("google-chrome is not in your path. Is it installed ?");
 		}
 		Platform p = Platform.getCurrent();
@@ -71,6 +90,41 @@ public class BrowserFinderUtils {
 	}
 
 	/**
+	 * guess if the file could be a browser
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public DesiredCapabilities discoverCapability(File file) {
+		DesiredCapabilities res;
+		try {
+			res = discoverFirefoxCapability(file);
+			return res;
+		} catch (Throwable t) {
+			// ignore
+		}
+		// TODO some more help about the other browsers ?
+		if (file.exists() && file.canExecute()) {
+			if ("opera".equals(file.getName())) {
+				res = DesiredCapabilities.opera();
+				res.setCapability("opera.binary", file.getAbsolutePath());
+				res.setCapability(CapabilityType.PLATFORM, Platform.getCurrent());
+				res.setCapability(RegistrationRequest.MAX_INSTANCES, 5);
+			} else if ("google-chrome".equals(file.getName())) {
+				res = DesiredCapabilities.chrome();
+				res.setCapability("chrome.binary", file.getAbsolutePath());
+				res.setCapability(CapabilityType.PLATFORM, Platform.getCurrent());
+				res.setCapability(RegistrationRequest.MAX_INSTANCES, 5);
+			} else {
+				throw new RuntimeException("not a recognized browser.");
+			}
+		} else {
+			throw new RuntimeException("not a valid exe");
+		}
+		return res;
+	}
+
+	/**
 	 * get all the info possible about this firefox install : OS, version ( from
 	 * application.ini )
 	 * 
@@ -80,7 +134,7 @@ public class BrowserFinderUtils {
 	 */
 	public DesiredCapabilities discoverFirefoxCapability(File exe) {
 		DesiredCapabilities ff = DesiredCapabilities.firefox();
-
+		ff.setCapability(RegistrationRequest.MAX_INSTANCES, 5);
 		if (!exe.exists()) {
 			throw new RuntimeException("Cannot find " + exe);
 		}
@@ -91,18 +145,18 @@ public class BrowserFinderUtils {
 		File appIni = new File(p, "application.ini");
 
 		if (!appIni.exists()) {
-			log.warning("corrupted install ? cannot find " + appIni.getAbsolutePath());
+			throw new GridException("corrupted install ? cannot find " + appIni.getAbsolutePath());
 		}
 		Properties prop = new Properties();
 		try {
 			prop.load(new FileInputStream(appIni));
 			String version = prop.getProperty("Version");
 			if (version == null) {
-				log.warning("corrupted install ? cannot find Version in " + appIni.getAbsolutePath());
+				throw new GridException("corrupted install ? cannot find Version in " + appIni.getAbsolutePath());
 			}
 			ff.setVersion(version);
 		} catch (Exception e) {
-			log.warning("corrupted install ? " + e.getMessage());
+			throw new GridException("corrupted install ? " + e.getMessage());
 		}
 		ff.setCapability(RegistrationRequest.MAX_INSTANCES, 5);
 		return ff;
@@ -144,6 +198,11 @@ public class BrowserFinderUtils {
 	public List<DesiredCapabilities> findAllInstallsAround(String exe) {
 		List<DesiredCapabilities> res = new ArrayList<DesiredCapabilities>();
 
+		DesiredCapabilities a = discoverCapability(new File(exe));
+		if (a != null) {
+			res.add(a);
+		}
+
 		// try to add the new ones
 		File more = new File(exe);
 		String exeName = more.getName();
@@ -153,7 +212,7 @@ public class BrowserFinderUtils {
 		List<File> folders = guessInstallsInFolder(parent);
 		for (File f : folders) {
 			File otherexe = new File(f, exeName);
-			DesiredCapabilities c = discoverFirefoxCapability(otherexe);
+			DesiredCapabilities c = discoverCapability(otherexe);
 			if (c != null) {
 				res.add(c);
 			}
@@ -161,12 +220,18 @@ public class BrowserFinderUtils {
 		return res;
 	}
 
+	/**
+	 * is that really needed ?
+	 * 
+	 * @param c
+	 * @param realCap
+	 */
 	public static void updateGuessedCapability(DesiredCapabilities c, DesiredCapabilities realCap) {
-		if (!c.getBrowserName().equals(realCap.getBrowserName())){
+		if (!c.getBrowserName().equals(realCap.getBrowserName())) {
 			c.setCapability("valid", false);
-			throw new GridException("Error validation the browser. Expected "+c.getBrowserName()+" but got "+realCap.getBrowserName());
+			throw new GridException("Error validating the browser. Expected " + c.getBrowserName() + " but got " + realCap.getBrowserName());
 		}
-		if (c.getVersion()==null || "".equals(c.getVersion())){
+		if (c.getVersion() == null || "".equals(c.getVersion())) {
 			c.setVersion(realCap.getVersion());
 		}
 	}
