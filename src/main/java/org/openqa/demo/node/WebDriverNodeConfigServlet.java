@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.demo.nodes.service.BrowserFinderUtils;
@@ -93,7 +95,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				o.put("hub_satus_icon.title", "Cannot contact " + hubUtils.getUrl());
 				o.put("hubInfo", "Cannot contact " + hubUtils.getUrl());
 			}
-
+			o.put("configuration", getConfigurationDiv());
+			o.put("json", getJSONContent());
 			return o;
 		}
 
@@ -105,6 +108,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			o.put("resetFB", "");
 			o.put("capabilities", getCapabilitiesDiv());
 			o.put("configuration", getConfigurationDiv());
+			o.put("json", getJSONContent());
 			return o;
 		}
 
@@ -135,6 +139,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 			o.put("resetFB", "");
 			o.put("capabilities", getCapabilitiesDiv());
 			o.put("configuration", getConfigurationDiv());
+			o.put("json", getJSONContent());
+
 			return o;
 		}
 
@@ -158,6 +164,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 				o.put("loadFB", "Great success!");
 				o.put("capabilities", getCapabilitiesDiv());
 				o.put("configuration", getConfigurationDiv());
+				o.put("json", getJSONContent());
 
 				return o;
 			} catch (IOException e) {
@@ -208,6 +215,8 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 			}
 			o.put("capabilities", getCapabilitiesDiv());
+			o.put("configuration", getConfigurationDiv());
+			o.put("json", getJSONContent());
 			return o;
 		}
 
@@ -300,24 +309,81 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 		// configuration
 		builder.append("<b>Configuration:</b></br>");
-		builder.append("<div id='configuration'>");
+		builder.append("<div id='configuration' >aa");
 		builder.append(getConfigurationDiv());
 		builder.append("</div>");
 
 		// save / load.
-		builder.append("<b>Backup:</b></br>");
-		builder.append("<div id='backupFile'  >" + node.getBackupFile().getAbsolutePath() + "</div>");
+		builder.append("<b>Backup:</b> (");
+		builder.append("<span id='backupFile'  >" + node.getBackupFile().getAbsolutePath() + ")</span></br>");
 		builder.append("<a id='load' href='#' >load</a>");
 		builder.append("<div id='loadFB' class='autoHide' ></div>");
 		builder.append("<a id='save' href='#' >save</a>");
 		builder.append("<div id='saveFB' class='autoHide' ></div>");
-
 		builder.append("<a id='reset' href='#' >reset</a>");
 		builder.append("<div id='resetFB' ></div>");
+
+		builder.append("<div id='json' >" + getJSONContent() + "</div>");
+
 		builder.append("</body>");
 		builder.append("</html>");
 
 		return builder.toString();
+
+	}
+
+	// basic formating
+	private String getJSONContent() {
+		try {
+			JSONObject o = node.getJSON();
+			JSONArray capabilities = o.getJSONArray("capabilities");
+			JSONObject configuration = o.getJSONObject("configuration");
+			StringBuilder b = new StringBuilder();
+			b.append("{\n");
+			b.append("\"capabilities\":\n");
+			b.append("\t[\n");
+			for (int i = 0; i < capabilities.length(); i++) {
+				JSONObject cap = capabilities.getJSONObject(i);
+				b.append("\t\t{\n");
+				for (Iterator iterator = cap.keys(); iterator.hasNext();) {
+					String key = (String) iterator.next();
+					b.append("\t\t\t\"" + key + "\" : ");
+					Object v = cap.get(key);
+					if (v instanceof Boolean || v instanceof Integer) {
+						b.append(v);
+					} else {
+						b.append("\"" + v + "\"");
+					}
+
+					b.append("\n");
+				}
+
+				b.append("\t\t},\n");
+			}
+			b.append("\t],\n");
+
+			b.append("\"configuration\":\n");
+			b.append("\t{\n");
+
+			for (Iterator iterator = configuration.keys(); iterator.hasNext();) {
+				String key = (String) iterator.next();
+				b.append("\t\t\"" + key + "\" : ");
+				Object v = configuration.get(key);
+				if (v instanceof Boolean || v instanceof Integer) {
+					b.append(v);
+				} else {
+					b.append("\"" + v + "\"");
+				}
+
+				b.append("\n");
+			}
+
+			b.append("\t}\n");
+			b.append("}\n");
+			return "<pre>"+b.toString()+"</pre>";
+		} catch (JSONException js) {
+			return "jspn parsing error " + js.getMessage();
+		}
 
 	}
 
@@ -390,7 +456,7 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 			// instance
 			builder.append("<td>");
-			int instances = (Integer)(capability.getCapability(RegistrationRequest.MAX_INSTANCES));
+			int instances = (Integer) (capability.getCapability(RegistrationRequest.MAX_INSTANCES));
 			builder.append("<input  size='2' class='" + RegistrationRequest.MAX_INSTANCES + "' index='" + index + "' value='" + instances + "' />");
 			builder.append("</td>");
 

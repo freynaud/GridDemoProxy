@@ -18,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.demo.nodes.service.BrowserFinderUtils;
 import org.openqa.grid.common.RegistrationRequest;
+import org.openqa.grid.internal.exception.GridException;
 import org.openqa.grid.selenium.utils.WebDriverJSONConfigurationUtils;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -36,8 +37,6 @@ public class Node {
 	private List<DesiredCapabilities> capabilities = new ArrayList<DesiredCapabilities>();
 	private Map<String, Object> configuration = new HashMap<String, Object>();
 
-	private URL hub;
-
 	public Node() {
 		init();
 	}
@@ -45,7 +44,7 @@ public class Node {
 	private void init() {
 
 		try {
-			hub = new URL("http://localhost:4444");
+			setHubURL(new URL("http://localhost:4444"));
 		} catch (MalformedURLException e1) {
 			// shouldnt happen
 			throw new RuntimeException("impossible");
@@ -78,8 +77,9 @@ public class Node {
 		capabilities.clear();
 		configuration.clear();
 		errorPerBrowser.clear();
-		
+
 	}
+
 	public void reset() {
 		capabilities.clear();
 		configuration.clear();
@@ -97,7 +97,7 @@ public class Node {
 
 	public void load() throws IOException, JSONException {
 		clearAll();
-		
+
 		JSONObject object = WebDriverJSONConfigurationUtils.loadJSON(backup.getCanonicalPath());
 		JSONArray caps = object.getJSONArray("capabilities");
 
@@ -138,7 +138,7 @@ public class Node {
 				c.put(key, configuration.get(key));
 			}
 			c.put("hub", getHubURL());
-			
+
 			res.put("capabilities", caps);
 			res.put("configuration", c);
 			return res;
@@ -207,10 +207,14 @@ public class Node {
 	}
 
 	public void setHubURL(URL hubUrl) {
-		this.hub = hubUrl;
+		configuration.put("hub", hubUrl);
 	}
 
 	public URL getHubURL() {
-		return hub;
+		try {
+			return new URL(configuration.get("hub").toString());
+		} catch (MalformedURLException e) {
+			throw new GridException(configuration.get("hub") + " is not a valid URL");
+		}
 	}
 }

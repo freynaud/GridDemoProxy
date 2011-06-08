@@ -8,6 +8,7 @@ $(document).ready(function() {
 			context : document.body,
 			success : function(data, textStatus, jqXHR) {
 				var result = eval('(' + jqXHR.responseText + ')');
+				console.log(result);
 				updatePage(result);
 			},
 			error : function(jqXHR, textStatus, errorThrown) {
