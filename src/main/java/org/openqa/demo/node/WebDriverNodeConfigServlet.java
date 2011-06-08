@@ -309,18 +309,18 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 		// configuration
 		builder.append("<b>Configuration:</b></br>");
-		builder.append("<div id='configuration' >aa");
+		builder.append("<div id='configuration' >");
 		builder.append(getConfigurationDiv());
 		builder.append("</div>");
 
 		// save / load.
 		builder.append("<b>Backup:</b> (");
 		builder.append("<span id='backupFile'  >" + node.getBackupFile().getAbsolutePath() + ")</span></br>");
-		builder.append("<a id='load' href='#' >load</a>");
+		builder.append("<a id='load' href='#' >load</a></br>");
 		builder.append("<div id='loadFB' class='autoHide' ></div>");
-		builder.append("<a id='save' href='#' >save</a>");
+		builder.append("<a id='save' href='#' >save</a></br>");
 		builder.append("<div id='saveFB' class='autoHide' ></div>");
-		builder.append("<a id='reset' href='#' >reset</a>");
+		builder.append("<a id='reset' href='#' >reset</br></a>");
 		builder.append("<div id='resetFB' ></div>");
 
 		builder.append("<div id='json' >" + getJSONContent() + "</div>");

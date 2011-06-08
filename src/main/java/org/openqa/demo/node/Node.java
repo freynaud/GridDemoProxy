@@ -49,6 +49,10 @@ public class Node {
 			// shouldnt happen
 			throw new RuntimeException("impossible");
 		}
+		
+		configuration.put(RegistrationRequest.CLEAN_UP_CYCLE, 5000);
+		configuration.put(RegistrationRequest.TIME_OUT, 30000);
+		configuration.put(RegistrationRequest.MAX_SESSION, 5);
 
 		try {
 			capabilities.add(finder.getDefaultIEInstall());
