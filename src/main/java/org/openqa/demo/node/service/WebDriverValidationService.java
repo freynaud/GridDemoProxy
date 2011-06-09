@@ -1,4 +1,4 @@
-package org.openqa.demo.nodes.service;
+package org.openqa.demo.node.service;
 
 import java.io.File;
 import java.io.IOException;
