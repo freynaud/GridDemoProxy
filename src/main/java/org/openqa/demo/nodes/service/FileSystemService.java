@@ -55,7 +55,11 @@ public class FileSystemService {
 		o.put("completionFB", "");
 
 		String sep = System.getProperty("file.separator");
-		String[] pieces = typed.split(sep);
+		String splitter = sep;
+		if ("\\".equals(sep)){
+			splitter = "\\\\";
+		}
+		String[] pieces = typed.split(splitter);
 		if (pieces.length == 0) {
 			o.put("success", false);
 			o.put("completionFB", typed + " doesn't look like a valid path.");
@@ -120,7 +124,7 @@ public class FileSystemService {
 			StringBuilder t = new StringBuilder();
 			t.append("<ul>");
 			for (String child : children) {
-				t.append("<li>" + child.replaceAll(folder.getAbsolutePath(), "") + "</li>");
+				t.append("<li>" + new File(child).getName() + "</li>");
 			}
 			t.append("</ul>");
 			o.put("success", false);

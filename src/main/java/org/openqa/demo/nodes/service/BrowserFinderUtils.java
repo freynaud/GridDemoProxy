@@ -57,7 +57,7 @@ public class BrowserFinderUtils {
 			}
 			cap.setCapability("opera.binary", s);
 		} catch (Throwable t) {
-			throw new GridException("opera doesn't seem to be installed " + t.getMessage());
+			throw new GridException(t.getMessage());
 		}
 		cap.setCapability(RegistrationRequest.MAX_INSTANCES, 1);
 		return cap;
@@ -122,10 +122,10 @@ public class BrowserFinderUtils {
 				res.setCapability(CapabilityType.PLATFORM, Platform.getCurrent());
 				res.setCapability(RegistrationRequest.MAX_INSTANCES, 5);
 			} else {
-				throw new RuntimeException("not a recognized browser.");
+				return null;
 			}
 		} else {
-			throw new RuntimeException("not a valid exe");
+			return null;
 		}
 		return res;
 	}

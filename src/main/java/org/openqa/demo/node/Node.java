@@ -226,7 +226,7 @@ public class Node {
 		} else if ("chrome".equals(browser)) {
 			key = "chrome.binary";
 		} else if ("opera".equals(browser)) {
-			key = "opera.benary";
+			key = "opera.binary";
 		} else {
 			throw new RuntimeException("NI");
 		}
@@ -234,7 +234,7 @@ public class Node {
 
 		for (DesiredCapabilities c : getCapabilities()) {
 			String path = (String) c.getCapability(key);
-			if (path != null && path.equals(newOne)) {
+			if (path != null && path.equalsIgnoreCase(newOne)) {
 				return false;
 			}
 		}
