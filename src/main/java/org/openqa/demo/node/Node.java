@@ -12,15 +12,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.demo.nodes.service.BrowserFinderUtils;
+import org.openqa.demo.nodes.service.HubUtils;
 import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.internal.exception.GridException;
 import org.openqa.grid.selenium.utils.WebDriverJSONConfigurationUtils;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.net.NetworkUtils;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class Node {
@@ -32,10 +39,13 @@ public class Node {
 	// helpers
 	private BrowserFinderUtils finder = new BrowserFinderUtils();
 	private Map<String, String> errorPerBrowser = new HashMap<String, String>();
-	private int port = -1;
+	private final int port;
 	private File backup = new File("node.json");
+	private final String ip;
 
-	public Node() {
+	public Node(int port) {
+		this.port = port;
+		ip = new NetworkUtils().getIp4NonLoopbackAddressOfThisMachine().getHostAddress();
 		loadDefault();
 	}
 
@@ -45,6 +55,7 @@ public class Node {
 	 */
 	public void loadDefault() {
 		clearAll();
+
 		try {
 			setHubURL(new URL("http://localhost:4444"));
 		} catch (MalformedURLException e1) {
@@ -52,9 +63,12 @@ public class Node {
 			throw new RuntimeException("impossible");
 		}
 
+		configuration.put(RegistrationRequest.REMOTE_URL, getRemoteURL());
+		configuration.put(RegistrationRequest.AUTO_REGISTER, false);
 		configuration.put(RegistrationRequest.CLEAN_UP_CYCLE, 5000);
 		configuration.put(RegistrationRequest.TIME_OUT, 30000);
 		configuration.put(RegistrationRequest.MAX_SESSION, 5);
+		configuration.put(RegistrationRequest.PROXY_CLASS, org.openqa.grid.selenium.proxy.WebDriverRemoteProxy.class.getCanonicalName());
 
 		try {
 			capabilities.add(finder.getDefaultIEInstall());
@@ -77,6 +91,10 @@ public class Node {
 			errorPerBrowser.put("opera", e.getMessage());
 		}
 
+	}
+
+	private String getRemoteURL() {
+		return "http://" + ip + ":" + getPort() + "/wb/hub";
 	}
 
 	private void clearAll() {
@@ -195,6 +213,7 @@ public class Node {
 	/**
 	 * add a new browser install to the node. Validate that it's not a dup.
 	 * browsers are equals when their binary is.
+	 * 
 	 * @param cap
 	 * @return
 	 */
@@ -231,10 +250,6 @@ public class Node {
 		return port;
 	}
 
-	public void setPort(int port) {
-		this.port = port;
-	}
-
 	public void setHubURL(URL hubUrl) {
 		configuration.put("hub", hubUrl);
 	}
@@ -249,5 +264,22 @@ public class Node {
 
 	public Platform getPlatform() {
 		return Platform.getCurrent();
+	}
+
+	public boolean register() throws IOException, JSONException {
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		BasicHttpEntityEnclosingRequest r = new BasicHttpEntityEnclosingRequest("POST", getHubURL().toExternalForm() + "/grid/register");
+		r.setEntity(new StringEntity(getJSON().toString()));
+
+		HttpHost host = new HttpHost(getHubURL().getHost(), getHubURL().getPort());
+		HttpResponse response = client.execute(host, r);
+
+		return response.getStatusLine().getStatusCode() == 200;
+	}
+
+	public JSONObject getStatusFromHub() {
+		HubUtils hubUtils = new HubUtils(getHubURL().getHost(), getHubURL().getPort());
+		return hubUtils.getProxyDetails(getRemoteURL());
 	}
 }

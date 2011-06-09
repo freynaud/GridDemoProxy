@@ -59,6 +59,7 @@ public class HubUtils {
 
 			JSONObject o = new JSONObject();
 			o.put("id", id);
+			o.put("isDown", "");
 
 			BasicHttpEntityEnclosingRequest r = new BasicHttpEntityEnclosingRequest("POST", status.toExternalForm());
 			r.setEntity(new StringEntity(o.toString()));
@@ -81,7 +82,7 @@ public class HubUtils {
 	 * @throws IOException
 	 * @throws JSONException
 	 */
-	private JSONObject extractObject(HttpResponse resp) throws IOException, JSONException {
+	public  static JSONObject extractObject(HttpResponse resp) throws IOException, JSONException {
 		BufferedReader rd = new BufferedReader(new InputStreamReader(resp.getEntity().getContent()));
 		StringBuffer s = new StringBuffer();
 		String line;

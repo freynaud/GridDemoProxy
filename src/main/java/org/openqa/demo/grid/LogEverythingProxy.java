@@ -29,6 +29,7 @@ public class LogEverythingProxy extends WebDriverRemoteProxy implements TimeoutL
 	@Override
 	public void beforeSession(TestSession session) {
 		super.beforeSession(session);
+		session.getSlot().getProxy().getRemoteURL();
 		String user = (String) session.getRequestedCapabilities().get("user");
 		addEvent(user, new NewBrowserRequestEvent(new DesiredCapabilities(session.getRequestedCapabilities())));
 	}

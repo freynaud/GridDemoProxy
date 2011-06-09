@@ -31,6 +31,21 @@ $(document).ready(function() {
 		}); // end ajax
 	});
 	
+	$("#refreshubFB").click(function(event) {
+		$.ajax({
+			url : "?refreshubFB",
+			type : 'POST',
+			context : document.body,
+			success : function(data, textStatus, jqXHR) {
+				var result = eval('(' + jqXHR.responseText + ')');
+				updatePage(result);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				error(jqXHR.responseText);
+			}
+		}); // end ajax
+	});
+	
 	$("#load").click(function(event) {
 		$.ajax({
 			url : "?load",
@@ -92,6 +107,22 @@ $(document).ready(function() {
 		}); // end ajax
 	});
 
+	$("#register").click(function(event) {
+		$.ajax({
+			url : "?register=",
+			type : 'POST',
+			context : document.body,
+			success : function(data, textStatus, jqXHR) {
+				var result = eval('(' + jqXHR.responseText + ')');
+				updatePage(result);
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				error(jqXHR.responseText);
+			}
+		}); // end ajax
+	});
+
+	
 	$("#capabilities").delegate(".validate_cap", "click", function() {
 		var index = $(this).attr('index');
 

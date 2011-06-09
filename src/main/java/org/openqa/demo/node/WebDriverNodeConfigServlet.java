@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +41,7 @@ import com.google.common.io.ByteStreams;
 public class WebDriverNodeConfigServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 7490344466454529896L;
-	private Node node = new Node();
+	private Node node;
 	private FileSystemService service = new FileSystemService();
 	private BrowserFinderUtils browserUtils = new BrowserFinderUtils();
 	private WebDriverValidationService wdValidator = new WebDriverValidationService();
@@ -50,9 +51,9 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 	// the page
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if (node.getPort() == -1) {
+		if (node == null) {
 			int port = request.getServerPort();
-			node.setPort(port);
+			node = new Node(port);
 		}
 		String page = getPage();
 		write(page, response);
@@ -60,7 +61,10 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 	// the ajax requests
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+		if (node == null) {
+			int port = request.getServerPort();
+			node = new Node(port);
+		}
 		try {
 			JSONObject ajax = processAjax(request, response);
 			write(ajax.toString(), response);
@@ -78,8 +82,9 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 	 * @param response
 	 * @return a JSONObject representing the page element to updatz
 	 * @throws JSONException
+	 * @throws IOException
 	 */
-	private JSONObject processAjax(HttpServletRequest request, HttpServletResponse response) throws JSONException {
+	private JSONObject processAjax(HttpServletRequest request, HttpServletResponse response) throws JSONException, IOException {
 
 		String status = request.getParameter("status");
 		if (status != null) {
@@ -130,6 +135,17 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		if (index != null) {
 			return valideCapability(index);
 		}
+
+		String refreshubFB = request.getParameter("refreshubFB");
+		if (refreshubFB != null) {
+			return refreshubFB();
+		}
+
+		String register = request.getParameter("register");
+		if (register != null) {
+			return register();
+		}
+
 		return null;
 	}
 
@@ -209,6 +225,10 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 
 		builder.append("<div id ='hubInfo' ><i>edit the url to point to another hub.</i></div></br>");
 
+		// connectivity
+		builder.append("<b>Currently <span id='proxyState' ></span> </b>");
+		builder.append("<a href='#' id='register' > register </a></br></br>");
+		builder.append("Feedback from hub :<div id='hubFB'></div><a id='refreshubFB' href='#' >get feedback</a>");
 		// capabilities
 		builder.append(getCapabilitiesDiv());
 
@@ -625,6 +645,46 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		o.put("success", true);
 		o.put("capabilities", getCapabilitiesDiv());
 		o.put("json", getJSONContent());
+		return o;
+
+	}
+
+	private JSONObject register() throws IOException, JSONException {
+		boolean ok = node.register();
+		JSONObject o = new JSONObject();
+		o.put("success", true);
+		return o;
+	}
+
+	private JSONObject refreshubFB() throws JSONException {
+		JSONObject o = new JSONObject();
+		StringBuilder b = new StringBuilder();
+		try {
+			
+			o.put("success", true);
+			JSONObject res = node.getStatusFromHub();
+			
+			// b.append("<b>original request : </b>"+res.get("request")+"</br>");
+			// o.put("hubFB",b.toString() );
+			if (res.getBoolean("success")) {
+				b.append("registered ");
+			} else {
+				b.append("not registered ");
+				o.put("proxyState", b.toString());
+				return o;
+			}
+			if (res.getBoolean("isDown")) {
+				b.append(" and inactive :");
+			} else {
+				b.append(" and active :");
+			}
+			o.put("proxyState", b.toString());
+			return o;
+			
+		} catch (Throwable t) {
+			o.put("proxyState", "error contacting the hub");
+		}
+		
 		return o;
 
 	}
