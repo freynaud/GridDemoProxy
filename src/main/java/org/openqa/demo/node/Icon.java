@@ -22,6 +22,8 @@ public enum Icon {
 	AURORA("/extra/resources/aurora.png"),
 
 	MAC("/extra/resources/mac.png"),
+	
+	WIN("/extra/resources/win.jpg"),
 
 	LINUX("/extra/resources/tux.png");
 

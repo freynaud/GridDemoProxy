@@ -13,7 +13,7 @@
 			<version>2.0rc3-SNAPSHOT</version>
 			<artifactId>selenium-server-standalone</artifactId>
 			<scope>system</scope>
-			<systemPath>/home/freynaud/selenium-server-standalone-2.0rc3-SNAPSHOT.jar</systemPath>
+			<systemPath>c:/tmp/sel.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>

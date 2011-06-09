@@ -52,9 +52,12 @@ public class BrowserFinderUtils {
 		OperaPaths path = new OperaPaths();
 		try {
 			String s = path.operaPath();
+			if (s == null) {
+				throw new GridException("opera is not in your path. Is it installed ?");
+			}
 			cap.setCapability("opera.binary", s);
 		} catch (Throwable t) {
-			throw new GridException("opera is not in your path. Is it installed ?");
+			throw new GridException("opera doesn't seem to be installed " + t.getMessage());
 		}
 		cap.setCapability(RegistrationRequest.MAX_INSTANCES, 1);
 		return cap;
@@ -83,7 +86,10 @@ public class BrowserFinderUtils {
 
 	public DesiredCapabilities getDefaultIEInstall() {
 		if (Platform.getCurrent().is(Platform.WINDOWS)) {
-			return null;
+			DesiredCapabilities cap = DesiredCapabilities.internetExplorer();
+			cap.setCapability(CapabilityType.PLATFORM, Platform.getCurrent());
+			cap.setCapability(RegistrationRequest.MAX_INSTANCES, 1);
+			return cap;
 		} else {
 			throw new GridException("No IE on " + Platform.getCurrent());
 		}

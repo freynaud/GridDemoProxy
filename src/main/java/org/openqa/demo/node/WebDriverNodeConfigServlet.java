@@ -202,21 +202,23 @@ public class WebDriverNodeConfigServlet extends HttpServlet {
 		builder.append("</div>");
 
 		// Platform
-		String iconp = "?";
+		Icon os = null;
 		switch (node.getPlatform()) {
 		case LINUX:
-			iconp = "tux.png";
+			os = Icon.LINUX;
 			break;
 		case MAC:
-			iconp = "mac.png";
+			os = Icon.MAC;
 			break;
 		case WINDOWS:
-
+		case VISTA:
+		case XP :
+			os = Icon.WIN;
 			break;
 		default:
 			break;
 		}
-		builder.append("<b>Platform :</b> <img  src='/extra/resources/" + iconp + "' title='" + node.getPlatform() + "'  ></br></br>");
+		builder.append("<b>Platform :</b> <img  src='"+os.path()+ "' title='" + node.getPlatform() + "'  ></br></br>");
 
 		// hub
 		builder.append("<b>Part of the grid : </b>");
